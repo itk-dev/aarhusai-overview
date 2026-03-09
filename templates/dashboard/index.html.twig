@@ -63,11 +63,8 @@
                     {% for model in models %}
                         <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row" data-sortable-target="body">
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ model.name }}
-                                    {% if model.description %}
-                                        <p class="text-xs text-gray-400 font-normal">{{ model.description|length > 80 ? model.description|slice(0, 80) ~ '...' : model.description }}</p>
-                                    {% endif %}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.owner ? model.owner.name : '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.baseModelId ?? '-' }}</td>

@@ -21,11 +21,12 @@ final class OpenWebUiSyncService
         $apiModels = $this->client->fetchModels();
         $modelRepository = $this->entityManager->getRepository(Model::class);
         $userRepository = $this->entityManager->getRepository(User::class);
-        $accessGrantRepository = $this->entityManager->getRepository(AccessGrant::class);
+        $seenIds = [];
         $count = 0;
 
         foreach ($apiModels as $item) {
             $id = $item['id'];
+            $seenIds[] = $id;
             $model = $modelRepository->find($id);
             $owner = isset($item['user_id']) ? $userRepository->find($item['user_id']) : null;
 
@@ -61,6 +62,7 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
+        $this->removeStaleEntities(Model::class, $seenIds);
         $this->entityManager->flush();
 
         return $count;
@@ -71,10 +73,12 @@ final class OpenWebUiSyncService
         $apiUsers = $this->client->fetchUsers();
         $repository = $this->entityManager->getRepository(User::class);
         $groupRepository = $this->entityManager->getRepository(Group::class);
+        $seenIds = [];
         $count = 0;
 
         foreach ($apiUsers['users'] as $item) {
             $id = $item['id'];
+            $seenIds[] = $id;
             $user = $repository->find($id);
 
             if (null === $user) {
@@ -109,6 +113,7 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
+        $this->removeStaleEntities(User::class, $seenIds);
         $this->entityManager->flush();
 
         return $count;
@@ -118,10 +123,12 @@ final class OpenWebUiSyncService
     {
         $apiGroups = $this->client->fetchGroups();
         $repository = $this->entityManager->getRepository(Group::class);
+        $seenIds = [];
         $count = 0;
 
         foreach ($apiGroups as $item) {
             $id = $item['id'];
+            $seenIds[] = $id;
             $group = $repository->find($id);
             $memberCount = $item['member_count'] ?? 0;
 
@@ -143,6 +150,7 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
+        $this->removeStaleEntities(Group::class, $seenIds);
         $this->entityManager->flush();
 
         return $count;
@@ -173,6 +181,26 @@ final class OpenWebUiSyncService
 
             $model->addAccessGrant($grant);
             $this->entityManager->persist($grant);
+        }
+    }
+
+    /**
+     * @param class-string $entityClass
+     * @param list<string> $seenIds
+     */
+    private function removeStaleEntities(string $entityClass, array $seenIds): void
+    {
+        $qb = $this->entityManager->createQueryBuilder()
+            ->select('e')
+            ->from($entityClass, 'e');
+
+        if ([] !== $seenIds) {
+            $qb->where('e.externalId NOT IN (:ids)')
+                ->setParameter('ids', $seenIds);
+        }
+
+        foreach ($qb->getQuery()->getResult() as $entity) {
+            $this->entityManager->remove($entity);
         }
     }
 
