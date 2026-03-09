@@ -47,10 +47,13 @@
         {# Models panel #}
         <div data-tabs-target="panel">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200" data-controller="sortable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none"
+                                data-sortable-target="header" data-action="click->sortable#sort">
+                                Name <span data-sort-arrow class="text-gray-400">&#x2195;</span>
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Model</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Access Grants</th>
@@ -58,7 +61,7 @@
                         </tr>
                     </thead>
                     {% for model in models %}
-                        <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row">
+                        <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row" data-sortable-target="body">
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ model.name }}
@@ -165,17 +168,20 @@
         {# Users panel #}
         <div style="display: none" data-tabs-target="panel">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200" data-controller="sortable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none"
+                                data-sortable-target="header" data-action="click->sortable#sort">
+                                Name <span data-sort-arrow class="text-gray-400">&#x2195;</span>
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groups</th>
                         </tr>
                     </thead>
                     {% for user in users %}
-                        <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row">
+                        <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row" data-sortable-target="body">
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ user.name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.email }}</td>
@@ -223,16 +229,19 @@
         {# Groups panel #}
         <div style="display: none" data-tabs-target="panel">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200" data-controller="sortable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 30%">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none" style="width: 30%"
+                                data-sortable-target="header" data-action="click->sortable#sort">
+                                Name <span data-sort-arrow class="text-gray-400">&#x2195;</span>
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 70%">Members</th>
                         </tr>
                     </thead>
                     {% for group in groups %}
                         {% set sorted_users = group.users|sort((a, b) => a.name <=> b.name) %}
-                        <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row">
+                        <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row" data-sortable-target="body">
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ group.name }}</td>
                                 <td class="px-6 py-4 text-sm">
