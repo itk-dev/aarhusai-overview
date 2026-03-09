@@ -1,10 +1,18 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['content'];
+    static targets = ['content', 'label'];
 
     toggle() {
         const el = this.contentTarget;
-        el.style.display = el.style.display === 'none' ? '' : 'none';
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? '' : 'none';
+
+        if (this.hasLabelTarget) {
+            const label = this.labelTarget;
+            const swap = label.dataset.swap;
+            label.dataset.swap = label.textContent;
+            label.textContent = swap;
+        }
     }
 }
