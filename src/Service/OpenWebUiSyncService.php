@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\AccessGrant;
 use App\Entity\Group;
 use App\Entity\Model;
 use App\Entity\User;
@@ -18,25 +19,44 @@ final class OpenWebUiSyncService
     public function syncModels(): int
     {
         $apiModels = $this->client->fetchModels();
-        $repository = $this->entityManager->getRepository(Model::class);
+        $modelRepository = $this->entityManager->getRepository(Model::class);
+        $userRepository = $this->entityManager->getRepository(User::class);
+        $accessGrantRepository = $this->entityManager->getRepository(AccessGrant::class);
         $count = 0;
 
         foreach ($apiModels as $item) {
             $id = $item['id'];
-            $model = $repository->find($id);
+            $model = $modelRepository->find($id);
+            $owner = isset($item['user_id']) ? $userRepository->find($item['user_id']) : null;
 
             if (null === $model) {
                 $model = new Model(
                     externalId: $id,
                     name: $item['name'] ?? $id,
-                    ownedBy: $item['owned_by'] ?? null,
+                    baseModelId: $item['base_model_id'] ?? null,
+                    description: $item['meta']['description'] ?? null,
+                    systemPrompt: $item['params']['system'] ?? null,
+                    isActive: $item['is_active'] ?? true,
+                    owner: $owner,
                 );
                 $this->entityManager->persist($model);
             } else {
                 $model->setName($item['name'] ?? $id);
-                $model->setOwnedBy($item['owned_by'] ?? null);
-                $model->setUpdatedAt(new \DateTimeImmutable());
+                $model->setBaseModelId($item['base_model_id'] ?? null);
+                $model->setDescription($item['meta']['description'] ?? null);
+                $model->setSystemPrompt($item['params']['system'] ?? null);
+                $model->setIsActive($item['is_active'] ?? true);
+                $model->setOwner($owner);
             }
+
+            if (isset($item['created_at'])) {
+                $model->setCreatedAt(new \DateTimeImmutable('@'.$item['created_at']));
+            }
+            if (isset($item['updated_at'])) {
+                $model->setUpdatedAt(new \DateTimeImmutable('@'.$item['updated_at']));
+            }
+
+            $this->syncAccessGrants($model, $item['access_grants'] ?? []);
 
             ++$count;
         }
@@ -50,6 +70,7 @@ final class OpenWebUiSyncService
     {
         $apiUsers = $this->client->fetchUsers();
         $repository = $this->entityManager->getRepository(User::class);
+        $groupRepository = $this->entityManager->getRepository(Group::class);
         $count = 0;
 
         foreach ($apiUsers['users'] as $item) {
@@ -71,8 +92,18 @@ final class OpenWebUiSyncService
                 $user->setUpdatedAt(new \DateTimeImmutable());
             }
 
+            $user->setUsername($item['username'] ?? null);
+
             if (isset($item['last_active_at'])) {
                 $user->setLastActiveAt(new \DateTimeImmutable('@'.$item['last_active_at']));
+            }
+
+            $user->clearGroups();
+            foreach ($item['group_ids'] ?? [] as $groupId) {
+                $group = $groupRepository->find($groupId);
+                if (null !== $group) {
+                    $user->addGroup($group);
+                }
             }
 
             ++$count;
@@ -92,20 +123,20 @@ final class OpenWebUiSyncService
         foreach ($apiGroups as $item) {
             $id = $item['id'];
             $group = $repository->find($id);
-            $userCount = \count($item['user_ids'] ?? []);
+            $memberCount = $item['member_count'] ?? 0;
 
             if (null === $group) {
                 $group = new Group(
                     externalId: $id,
                     name: $item['name'] ?? '',
                     description: $item['description'] ?? null,
-                    userCount: $userCount,
+                    memberCount: $memberCount,
                 );
                 $this->entityManager->persist($group);
             } else {
                 $group->setName($item['name'] ?? '');
                 $group->setDescription($item['description'] ?? null);
-                $group->setUserCount($userCount);
+                $group->setMemberCount($memberCount);
                 $group->setUpdatedAt(new \DateTimeImmutable());
             }
 
@@ -117,12 +148,40 @@ final class OpenWebUiSyncService
         return $count;
     }
 
+    /**
+     * @param array<array<string, mixed>> $grants
+     */
+    private function syncAccessGrants(Model $model, array $grants): void
+    {
+        $model->clearAccessGrants();
+        $this->entityManager->flush();
+
+        foreach ($grants as $grantData) {
+            $grant = new AccessGrant(
+                externalId: $grantData['id'],
+                model: $model,
+                resourceType: $grantData['resource_type'] ?? '',
+                resourceId: $grantData['resource_id'] ?? '',
+                principalType: $grantData['principal_type'] ?? '',
+                principalId: $grantData['principal_id'] ?? '',
+                permission: $grantData['permission'] ?? '',
+            );
+
+            if (isset($grantData['created_at'])) {
+                $grant->setCreatedAt(new \DateTimeImmutable('@'.$grantData['created_at']));
+            }
+
+            $model->addAccessGrant($grant);
+            $this->entityManager->persist($grant);
+        }
+    }
+
     public function syncAll(): array
     {
         return [
-            'models' => $this->syncModels(),
-            'users' => $this->syncUsers(),
             'groups' => $this->syncGroups(),
+            'users' => $this->syncUsers(),
+            'models' => $this->syncModels(),
         ];
     }
 }

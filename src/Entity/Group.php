@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\GroupRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
@@ -20,18 +22,25 @@ class Group
     private ?string $description = null;
 
     #[ORM\Column]
-    private int $userCount = 0;
+    private int $memberCount = 0;
 
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
 
-    public function __construct(string $externalId, string $name, ?string $description = null, int $userCount = 0)
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'groups')]
+    private Collection $users;
+
+    public function __construct(string $externalId, string $name, ?string $description = null, int $memberCount = 0)
     {
         $this->externalId = $externalId;
         $this->name = $name;
         $this->description = $description;
-        $this->userCount = $userCount;
+        $this->memberCount = $memberCount;
         $this->updatedAt = new \DateTimeImmutable();
+        $this->users = new ArrayCollection();
     }
 
     public function getExternalId(): string
@@ -59,14 +68,14 @@ class Group
         $this->description = $description;
     }
 
-    public function getUserCount(): int
+    public function getMemberCount(): int
     {
-        return $this->userCount;
+        return $this->memberCount;
     }
 
-    public function setUserCount(int $userCount): void
+    public function setMemberCount(int $memberCount): void
     {
-        $this->userCount = $userCount;
+        $this->memberCount = $memberCount;
     }
 
     public function getUpdatedAt(): \DateTimeImmutable
@@ -77,5 +86,13 @@ class Group
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
     }
 }

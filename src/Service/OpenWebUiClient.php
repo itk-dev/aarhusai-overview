@@ -15,7 +15,6 @@ final class OpenWebUiClient
 
     public function fetchModels(): array
     {
-        $response = $this->request('/api/v1/models/list');
         return $this->request('/api/v1/models/list')['items'] ?? [];
     }
 

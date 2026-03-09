@@ -42,17 +42,28 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Model</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Access Grants</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for model in models %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ model.name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.ownedBy ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ model.name }}
+                                    {% if model.description %}
+                                        <p class="text-xs text-gray-400 font-normal">{{ model.description|length > 80 ? model.description|slice(0, 80) ~ '...' : model.description }}</p>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.owner ? model.owner.name : '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.baseModelId ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.accessGrants|length }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.updatedAt|date('Y-m-d H:i') }}</td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="2" class="px-6 py-4 text-sm text-gray-500 text-center">No models synced yet. Run <code>bin/console app:sync-openwebui</code></td>
+                                <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center">No models synced yet. Run <code>bin/console app:sync-openwebui</code></td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -69,6 +80,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groups</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -82,10 +94,11 @@
                                         {{ user.role }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.groups|length }}</td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-sm text-gray-500 text-center">No users synced yet. Run <code>bin/console app:sync-openwebui</code></td>
+                                <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center">No users synced yet. Run <code>bin/console app:sync-openwebui</code></td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -109,7 +122,7 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ group.name }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ group.description ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ group.userCount }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ group.memberCount }}</td>
                             </tr>
                         {% else %}
                             <tr>

@@ -28,6 +28,7 @@ final class SyncOpenWebUiCommand extends Command
         try {
             $result = $this->syncService->syncAll();
             $io->success(sprintf('Synced %d models, %d users, and %d groups from OpenWebUI.', $result['models'], $result['users'], $result['groups']));
+
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             $io->error('Sync failed: '.$e->getMessage());
