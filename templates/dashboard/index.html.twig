@@ -3,15 +3,25 @@
 {% block title %}Dashboard - AarhusAI Overview{% endblock %}
 
 {% block header_right %}
-    <span class="inline-flex items-center gap-1.5 text-sm">
-        {% if healthy %}
-            <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-            <span class="text-green-700">OpenWebUI Connected</span>
-        {% else %}
-            <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-            <span class="text-red-700">OpenWebUI Unreachable</span>
-        {% endif %}
-    </span>
+    <div class="flex items-center gap-4">
+        <span class="inline-flex items-center gap-1.5 text-sm">
+            {% if healthy %}
+                <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                <span class="text-green-700">OpenWebUI Connected</span>
+            {% else %}
+                <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                <span class="text-red-700">OpenWebUI Unreachable</span>
+            {% endif %}
+        </span>
+        <form method="post" action="{{ path('dashboard_sync') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('sync') }}">
+            <button type="submit"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer">
+                {{ include('icons/sync.html.twig') }}
+                Sync
+            </button>
+        </form>
+    </div>
 {% endblock %}
 
 {% block body %}
