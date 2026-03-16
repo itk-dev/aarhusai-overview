@@ -30,7 +30,7 @@ class Model
     private bool $isActive = true;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'external_id', nullable: true)]
+    #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'external_id', nullable: true, onDelete: 'SET NULL')]
     private ?User $owner = null;
 
     #[ORM\Column(nullable: true)]

@@ -15,10 +15,10 @@ The project runs entirely via Docker Compose with Traefik for routing. Required 
 docker compose up -d
 
 # Install dependencies
-docker compose run --rm phpfpm composer install
+docker compose exec phpfpm composer install
 
 # Run Symfony console commands
-docker compose run --rm phpfpm bin/console <command>
+docker compose exec phpfpm bin/console <command>
 ```
 
 Docker compose files: `docker-compose.yml` (local dev), `docker-compose.dev.yml` (staging with basic auth), `docker-compose.server.yml` (production), `docker-compose.redirect.yml` (www redirect).
@@ -29,22 +29,22 @@ All checks run inside Docker containers. CI runs these on PRs and pushes to `mai
 
 ```shell
 # PHP coding standards (Symfony rules via php-cs-fixer)
-docker compose run --rm phpfpm vendor/bin/php-cs-fixer fix
-docker compose run --rm phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff
+docker compose exec phpfpm vendor/bin/php-cs-fixer fix
+docker compose exec phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff
 
 # Twig linting
-docker compose run --rm phpfpm vendor/bin/twig-cs-fixer lint
+docker compose exec phpfpm vendor/bin/twig-cs-fixer lint
 
 # Composer validation and normalization
-docker compose run --rm phpfpm composer validate --strict
-docker compose run --rm phpfpm composer normalize --dry-run
+docker compose exec phpfpm composer validate --strict
+docker compose exec phpfpm composer normalize --dry-run
 
 # Markdown linting
-docker compose --profile dev run --rm markdownlint markdownlint '**/*.md'
+docker compose --profile dev exec markdownlint markdownlint '**/*.md'
 
 # YAML and styles (Prettier)
-docker compose --profile dev run --rm prettier '**/*.{yml,yaml}' --check
-docker compose --profile dev run --rm prettier 'assets/**/*.{css,scss}' --check
+docker compose --profile dev exec prettier '**/*.{yml,yaml}' --check
+docker compose --profile dev exec prettier 'assets/**/*.{css,scss}' --check
 ```
 
 ## CI Workflows
