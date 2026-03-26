@@ -4,15 +4,20 @@
 
 {% block header_right %}
     <div class="flex items-center gap-4">
-        <span class="inline-flex items-center gap-1.5 text-sm">
-            {% if healthy %}
-                <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                <span class="text-green-700">OpenWebUI Connected</span>
-            {% else %}
-                <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                <span class="text-red-700">OpenWebUI Unreachable</span>
-            {% endif %}
-        </span>
+        {% for key, healthy in siteHealth %}
+            <span class="inline-flex items-center gap-1.5 text-sm">
+                {% if healthy is null %}
+                    <span class="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
+                    <span class="text-gray-500">{{ key|capitalize }}</span>
+                {% elseif healthy %}
+                    <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                    <span class="text-green-700">{{ key|capitalize }}</span>
+                {% else %}
+                    <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                    <span class="text-red-700">{{ key|capitalize }}</span>
+                {% endif %}
+            </span>
+        {% endfor %}
         <form method="post" action="{{ path('dashboard_sync') }}">
             <input type="hidden" name="_token" value="{{ csrf_token('sync') }}">
             <button type="submit"
@@ -25,6 +30,20 @@
 {% endblock %}
 
 {% block body %}
+    {# Site selector pills #}
+    <div class="mb-4 flex gap-2">
+        <a href="{{ path('dashboard') }}"
+            class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {{ activeSite is null ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' }}">
+            All Sites
+        </a>
+        {% for key in siteKeys %}
+            <a href="{{ path('dashboard', { site: key }) }}"
+                class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {{ activeSite == key ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' }}">
+                {{ key|capitalize }}
+            </a>
+        {% endfor %}
+    </div>
+
     <div class="bg-white rounded-lg shadow" data-controller="tabs">
         {# Tab navigation #}
         <div class="p-3 pb-0">
@@ -79,6 +98,9 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Model</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Access Grants</th>
+                            {% if activeSite is null %}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site</th>
+                            {% endif %}
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
                         </tr>
                     </thead>
@@ -101,11 +123,16 @@
                                         <span class="text-gray-500">0</span>
                                     {% endif %}
                                 </td>
+                                {% if activeSite is null %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ model.site }}</span>
+                                    </td>
+                                {% endif %}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.updatedAt|date('Y-m-d H:i') }}</td>
                             </tr>
                             {% if model.accessGrants|length > 0 %}
                                 <tr data-toggle-row-target="content" style="display: none">
-                                    <td colspan="5" class="px-6 py-4 bg-gray-50">
+                                    <td colspan="{{ activeSite is null ? 6 : 5 }}" class="px-6 py-4 bg-gray-50">
                                         {# Group grants by principalType+principalId, groups first then users #}
                                         {% set grouped_groups = {} %}
                                         {% set grouped_users = {} %}
@@ -176,7 +203,7 @@
                     {% else %}
                         <tbody class="bg-white">
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center">No models synced yet. Run <code>bin/console app:sync-openwebui</code></td>
+                                <td colspan="{{ activeSite is null ? 6 : 5 }}" class="px-6 py-4 text-sm text-gray-500 text-center">No models synced yet. Run <code>bin/console app:sync-openwebui</code></td>
                             </tr>
                         </tbody>
                     {% endfor %}
@@ -197,6 +224,9 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groups</th>
+                            {% if activeSite is null %}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     {% for user in users %}
@@ -221,10 +251,15 @@
                                         <span class="text-gray-500">0</span>
                                     {% endif %}
                                 </td>
+                                {% if activeSite is null %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ user.site }}</span>
+                                    </td>
+                                {% endif %}
                             </tr>
                             {% if user.groups|length > 0 %}
                                 <tr data-toggle-row-target="content" style="display: none">
-                                    <td colspan="4" class="px-6 py-4 bg-gray-50">
+                                    <td colspan="{{ activeSite is null ? 5 : 4 }}" class="px-6 py-4 bg-gray-50">
                                         <div class="flex flex-wrap gap-1.5">
                                             {% for group in user.groups|sort((a, b) => a.name <=> b.name) %}
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ group.name }}</span>
@@ -237,7 +272,7 @@
                     {% else %}
                         <tbody class="bg-white">
                             <tr>
-                                <td colspan="4" class="px-6 py-4 text-sm text-gray-500 text-center">No users synced yet. Run <code>bin/console app:sync-openwebui</code></td>
+                                <td colspan="{{ activeSite is null ? 5 : 4 }}" class="px-6 py-4 text-sm text-gray-500 text-center">No users synced yet. Run <code>bin/console app:sync-openwebui</code></td>
                             </tr>
                         </tbody>
                     {% endfor %}
@@ -251,11 +286,14 @@
                 <table class="min-w-full divide-y divide-gray-200" data-controller="sortable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none" style="width: 30%"
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none" style="width: {{ activeSite is null ? '25%' : '30%' }}"
                                 data-sortable-target="header" data-action="click->sortable#sort">
                                 Name <span data-sort-arrow class="text-gray-400">&#x2195;</span>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 70%">Members</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: {{ activeSite is null ? '55%' : '70%' }}">Members</th>
+                            {% if activeSite is null %}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 20%">Site</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     {% for group in groups %}
@@ -287,12 +325,17 @@
                                         </div>
                                     {% endif %}
                                 </td>
+                                {% if activeSite is null %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ group.site }}</span>
+                                    </td>
+                                {% endif %}
                             </tr>
                         </tbody>
                     {% else %}
                         <tbody class="bg-white">
                             <tr>
-                                <td colspan="2" class="px-6 py-4 text-sm text-gray-500 text-center">No groups synced yet. Run <code>bin/console app:sync-openwebui</code></td>
+                                <td colspan="{{ activeSite is null ? 3 : 2 }}" class="px-6 py-4 text-sm text-gray-500 text-center">No groups synced yet. Run <code>bin/console app:sync-openwebui</code></td>
                             </tr>
                         </tbody>
                     {% endfor %}

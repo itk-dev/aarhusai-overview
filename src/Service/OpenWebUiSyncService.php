@@ -11,14 +11,40 @@ use Doctrine\ORM\EntityManagerInterface;
 final class OpenWebUiSyncService
 {
     public function __construct(
-        private OpenWebUiClient $client,
+        private OpenWebUiClientFactory $clientFactory,
         private EntityManagerInterface $entityManager,
     ) {
     }
 
-    public function syncModels(): int
+    /**
+     * @return array<string, array{groups: int, users: int, models: int}|array{error: string}>
+     */
+    public function syncAll(?string $siteKey = null): array
     {
-        $apiModels = $this->client->fetchModels();
+        $siteKeys = null !== $siteKey ? [$siteKey] : $this->clientFactory->getSiteKeys();
+        $results = [];
+
+        foreach ($siteKeys as $key) {
+            try {
+                $client = $this->clientFactory->createClient($key);
+            } catch (\InvalidArgumentException $e) {
+                $results[$key] = ['error' => $e->getMessage()];
+                continue;
+            }
+
+            $results[$key] = [
+                'groups' => $this->syncGroups($key, $client),
+                'users' => $this->syncUsers($key, $client),
+                'models' => $this->syncModels($key, $client),
+            ];
+        }
+
+        return $results;
+    }
+
+    private function syncModels(string $siteKey, OpenWebUiClient $client): int
+    {
+        $apiModels = $client->fetchModels();
         $modelRepository = $this->entityManager->getRepository(Model::class);
         $userRepository = $this->entityManager->getRepository(User::class);
         $seenIds = [];
@@ -28,11 +54,14 @@ final class OpenWebUiSyncService
             $id = $item['id'];
             $seenIds[] = $id;
             $model = $modelRepository->find($id);
-            $owner = isset($item['user_id']) ? $userRepository->find($item['user_id']) : null;
+            $owner = isset($item['user_id'])
+                ? $userRepository->findOneBy(['externalId' => $item['user_id'], 'site' => $siteKey])
+                : null;
 
             if (null === $model) {
                 $model = new Model(
                     externalId: $id,
+                    site: $siteKey,
                     name: $item['name'] ?? $id,
                     baseModelId: $item['base_model_id'] ?? null,
                     description: $item['meta']['description'] ?? null,
@@ -57,20 +86,20 @@ final class OpenWebUiSyncService
                 $model->setUpdatedAt(new \DateTimeImmutable('@'.$item['updated_at']));
             }
 
-            $this->syncAccessGrants($model, $item['access_grants'] ?? []);
+            $this->syncAccessGrants($model, $siteKey, $item['access_grants'] ?? []);
 
             ++$count;
         }
 
-        $this->removeStaleEntities(Model::class, $seenIds);
+        $this->removeStaleEntities(Model::class, $seenIds, $siteKey);
         $this->entityManager->flush();
 
         return $count;
     }
 
-    public function syncUsers(): int
+    private function syncUsers(string $siteKey, OpenWebUiClient $client): int
     {
-        $apiUsers = $this->client->fetchUsers();
+        $apiUsers = $client->fetchUsers();
         $repository = $this->entityManager->getRepository(User::class);
         $groupRepository = $this->entityManager->getRepository(Group::class);
         $seenIds = [];
@@ -84,6 +113,7 @@ final class OpenWebUiSyncService
             if (null === $user) {
                 $user = new User(
                     externalId: $id,
+                    site: $siteKey,
                     name: $item['name'] ?? '',
                     email: $item['email'] ?? '',
                     role: $item['role'] ?? 'user',
@@ -104,7 +134,7 @@ final class OpenWebUiSyncService
 
             $user->clearGroups();
             foreach ($item['group_ids'] ?? [] as $groupId) {
-                $group = $groupRepository->find($groupId);
+                $group = $groupRepository->findOneBy(['externalId' => $groupId, 'site' => $siteKey]);
                 if (null !== $group) {
                     $user->addGroup($group);
                 }
@@ -113,15 +143,15 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
-        $this->removeStaleEntities(User::class, $seenIds);
+        $this->removeStaleEntities(User::class, $seenIds, $siteKey);
         $this->entityManager->flush();
 
         return $count;
     }
 
-    public function syncGroups(): int
+    private function syncGroups(string $siteKey, OpenWebUiClient $client): int
     {
-        $apiGroups = $this->client->fetchGroups();
+        $apiGroups = $client->fetchGroups();
         $repository = $this->entityManager->getRepository(Group::class);
         $seenIds = [];
         $count = 0;
@@ -135,6 +165,7 @@ final class OpenWebUiSyncService
             if (null === $group) {
                 $group = new Group(
                     externalId: $id,
+                    site: $siteKey,
                     name: $item['name'] ?? '',
                     description: $item['description'] ?? null,
                     memberCount: $memberCount,
@@ -150,7 +181,7 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
-        $this->removeStaleEntities(Group::class, $seenIds);
+        $this->removeStaleEntities(Group::class, $seenIds, $siteKey);
         $this->entityManager->flush();
 
         return $count;
@@ -159,7 +190,7 @@ final class OpenWebUiSyncService
     /**
      * @param array<array<string, mixed>> $grants
      */
-    private function syncAccessGrants(Model $model, array $grants): void
+    private function syncAccessGrants(Model $model, string $siteKey, array $grants): void
     {
         $model->clearAccessGrants();
         $this->entityManager->flush();
@@ -167,6 +198,7 @@ final class OpenWebUiSyncService
         foreach ($grants as $grantData) {
             $grant = new AccessGrant(
                 externalId: $grantData['id'],
+                site: $siteKey,
                 model: $model,
                 resourceType: $grantData['resource_type'] ?? '',
                 resourceId: $grantData['resource_id'] ?? '',
@@ -188,28 +220,21 @@ final class OpenWebUiSyncService
      * @param class-string $entityClass
      * @param list<string> $seenIds
      */
-    private function removeStaleEntities(string $entityClass, array $seenIds): void
+    private function removeStaleEntities(string $entityClass, array $seenIds, string $siteKey): void
     {
         $qb = $this->entityManager->createQueryBuilder()
             ->select('e')
-            ->from($entityClass, 'e');
+            ->from($entityClass, 'e')
+            ->where('e.site = :site')
+            ->setParameter('site', $siteKey);
 
         if ([] !== $seenIds) {
-            $qb->where('e.externalId NOT IN (:ids)')
+            $qb->andWhere('e.externalId NOT IN (:ids)')
                 ->setParameter('ids', $seenIds);
         }
 
         foreach ($qb->getQuery()->getResult() as $entity) {
             $this->entityManager->remove($entity);
         }
-    }
-
-    public function syncAll(): array
-    {
-        return [
-            'groups' => $this->syncGroups(),
-            'users' => $this->syncUsers(),
-            'models' => $this->syncModels(),
-        ];
     }
 }

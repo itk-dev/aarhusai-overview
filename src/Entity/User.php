@@ -14,6 +14,9 @@ class User
     #[ORM\Column(length: 255)]
     private string $externalId;
 
+    #[ORM\Column(length: 50)]
+    private string $site;
+
     #[ORM\Column(length: 255)]
     private string $name;
 
@@ -43,9 +46,10 @@ class User
     )]
     private Collection $groups;
 
-    public function __construct(string $externalId, string $name, string $email, string $role)
+    public function __construct(string $externalId, string $site, string $name, string $email, string $role)
     {
         $this->externalId = $externalId;
+        $this->site = $site;
         $this->name = $name;
         $this->email = $email;
         $this->role = $role;
@@ -56,6 +60,11 @@ class User
     public function getExternalId(): string
     {
         return $this->externalId;
+    }
+
+    public function getSite(): string
+    {
+        return $this->site;
     }
 
     public function getName(): string

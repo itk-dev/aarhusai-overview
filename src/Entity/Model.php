@@ -14,6 +14,9 @@ class Model
     #[ORM\Column(length: 255)]
     private string $externalId;
 
+    #[ORM\Column(length: 50)]
+    private string $site;
+
     #[ORM\Column(length: 255)]
     private string $name;
 
@@ -47,6 +50,7 @@ class Model
 
     public function __construct(
         string $externalId,
+        string $site,
         string $name,
         ?string $baseModelId = null,
         ?string $description = null,
@@ -55,6 +59,7 @@ class Model
         ?User $owner = null,
     ) {
         $this->externalId = $externalId;
+        $this->site = $site;
         $this->name = $name;
         $this->baseModelId = $baseModelId;
         $this->description = $description;
@@ -68,6 +73,11 @@ class Model
     public function getExternalId(): string
     {
         return $this->externalId;
+    }
+
+    public function getSite(): string
+    {
+        return $this->site;
     }
 
     public function getName(): string

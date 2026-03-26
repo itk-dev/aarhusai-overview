@@ -12,6 +12,9 @@ class AccessGrant
     #[ORM\Column(length: 255)]
     private string $externalId;
 
+    #[ORM\Column(length: 50)]
+    private string $site;
+
     #[ORM\ManyToOne(targetEntity: Model::class, inversedBy: 'accessGrants')]
     #[ORM\JoinColumn(name: 'model_external_id', referencedColumnName: 'external_id', nullable: false)]
     private Model $model;
@@ -36,6 +39,7 @@ class AccessGrant
 
     public function __construct(
         string $externalId,
+        string $site,
         Model $model,
         string $resourceType,
         string $resourceId,
@@ -44,6 +48,7 @@ class AccessGrant
         string $permission,
     ) {
         $this->externalId = $externalId;
+        $this->site = $site;
         $this->model = $model;
         $this->resourceType = $resourceType;
         $this->resourceId = $resourceId;
@@ -55,6 +60,11 @@ class AccessGrant
     public function getExternalId(): string
     {
         return $this->externalId;
+    }
+
+    public function getSite(): string
+    {
+        return $this->site;
     }
 
     public function getModel(): Model

@@ -7,6 +7,13 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    openwebui_sites:
+        production:
+            base_url: '%env(OPENWEBUI_PRODUCTION_BASE_URL)%'
+            api_key: '%env(OPENWEBUI_PRODUCTION_API_KEY)%'
+        test:
+            base_url: '%env(OPENWEBUI_TEST_BASE_URL)%'
+            api_key: '%env(OPENWEBUI_TEST_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -22,7 +29,6 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Service\OpenWebUiClient:
+    App\Service\OpenWebUiClientFactory:
         arguments:
-            $baseUrl: '%env(OPENWEBUI_BASE_URL)%'
-            $apiKey: '%env(OPENWEBUI_API_KEY)%'
+            $sites: '%openwebui_sites%'

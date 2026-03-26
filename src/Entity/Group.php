@@ -15,6 +15,9 @@ class Group
     #[ORM\Column(length: 255)]
     private string $externalId;
 
+    #[ORM\Column(length: 50)]
+    private string $site;
+
     #[ORM\Column(length: 255)]
     private string $name;
 
@@ -33,9 +36,10 @@ class Group
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'groups')]
     private Collection $users;
 
-    public function __construct(string $externalId, string $name, ?string $description = null, int $memberCount = 0)
+    public function __construct(string $externalId, string $site, string $name, ?string $description = null, int $memberCount = 0)
     {
         $this->externalId = $externalId;
+        $this->site = $site;
         $this->name = $name;
         $this->description = $description;
         $this->memberCount = $memberCount;
@@ -46,6 +50,11 @@ class Group
     public function getExternalId(): string
     {
         return $this->externalId;
+    }
+
+    public function getSite(): string
+    {
+        return $this->site;
     }
 
     public function getName(): string

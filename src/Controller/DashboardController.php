@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Group;
 use App\Entity\Model;
 use App\Entity\User;
-use App\Service\OpenWebUiClient;
+use App\Service\OpenWebUiClientFactory;
 use App\Service\OpenWebUiSyncService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,13 +16,32 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DashboardController extends AbstractController
 {
     #[Route('/', name: 'dashboard')]
-    public function index(EntityManagerInterface $em, OpenWebUiClient $client): Response
+    public function index(Request $request, EntityManagerInterface $em, OpenWebUiClientFactory $clientFactory): Response
     {
+        $siteKeys = $clientFactory->getSiteKeys();
+        $activeSite = $request->query->get('site');
+        if (null !== $activeSite && !\in_array($activeSite, $siteKeys, true)) {
+            $activeSite = null;
+        }
+
+        $siteHealth = [];
+        foreach ($siteKeys as $key) {
+            try {
+                $siteHealth[$key] = $clientFactory->createClient($key)->isHealthy();
+            } catch (\InvalidArgumentException) {
+                $siteHealth[$key] = null;
+            }
+        }
+
+        $criteria = null !== $activeSite ? ['site' => $activeSite] : [];
+
         return $this->render('dashboard/index.html.twig', [
-            'models' => $em->getRepository(Model::class)->findAll(),
-            'users' => $em->getRepository(User::class)->findAll(),
-            'groups' => $em->getRepository(Group::class)->findAll(),
-            'healthy' => $client->isHealthy(),
+            'models' => $em->getRepository(Model::class)->findBy($criteria),
+            'users' => $em->getRepository(User::class)->findBy($criteria),
+            'groups' => $em->getRepository(Group::class)->findBy($criteria),
+            'siteKeys' => $siteKeys,
+            'siteHealth' => $siteHealth,
+            'activeSite' => $activeSite,
         ]);
     }
 
@@ -35,8 +54,15 @@ final class DashboardController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        $syncService->syncAll();
-        $this->addFlash('success', 'Data synced successfully.');
+        $results = $syncService->syncAll();
+
+        foreach ($results as $site => $counts) {
+            if (isset($counts['error'])) {
+                $this->addFlash('warning', sprintf('[%s] Skipped: %s', $site, $counts['error']));
+                continue;
+            }
+            $this->addFlash('success', sprintf('[%s] Synced %d models, %d users, %d groups.', $site, $counts['models'], $counts['users'], $counts['groups']));
+        }
 
         return $this->redirectToRoute('dashboard');
     }
