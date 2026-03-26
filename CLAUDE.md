@@ -8,7 +8,8 @@ AarhusAI Overview — a Symfony 7.4 project (PHP 8.4) by ITK Dev. Currently in e
 
 ## Development Environment
 
-The project runs entirely via Docker Compose with Traefik for routing. Required env vars `COMPOSE_DOMAIN` and `COMPOSE_PROJECT_NAME` are set in `.env`.
+The project runs entirely via Docker Compose with Traefik for routing. Required env vars `COMPOSE_DOMAIN` and
+`COMPOSE_PROJECT_NAME` are set in `.env`.
 
 ```shell
 # Start services (mariadb, phpfpm, nginx, mail)
@@ -21,7 +22,8 @@ docker compose exec phpfpm composer install
 docker compose exec phpfpm bin/console <command>
 ```
 
-Docker compose files: `docker-compose.yml` (local dev), `docker-compose.dev.yml` (staging with basic auth), `docker-compose.server.yml` (production), `docker-compose.redirect.yml` (www redirect).
+Docker compose files: `docker-compose.yml` (local dev), `docker-compose.dev.yml` (staging with basic auth),
+`docker-compose.server.yml` (production), `docker-compose.redirect.yml` (www redirect).
 
 ## Linting & Code Quality
 
@@ -40,11 +42,11 @@ docker compose exec phpfpm composer validate --strict
 docker compose exec phpfpm composer normalize --dry-run
 
 # Markdown linting
-docker compose --profile dev exec markdownlint markdownlint '**/*.md'
+docker compose run --rm markdownlint markdownlint '**/*.md'
 
 # YAML and styles (Prettier)
-docker compose --profile dev exec prettier '**/*.{yml,yaml}' --check
-docker compose --profile dev exec prettier 'assets/**/*.{css,scss}' --check
+docker compose run --rm prettier '**/*.{yml,yaml}' --check
+docker compose run --rm prettier 'assets/**/*.{css,scss}' --check
 ```
 
 ## CI Workflows
@@ -62,4 +64,5 @@ PRs must also update `CHANGELOG.md` (enforced by CI).
 
 ## Architecture
 
-Standard Symfony structure with autowiring and autoconfiguration enabled. App namespace is `App\` mapped to `src/`. Services are auto-registered from `src/` in `config/services.yaml`.
+Standard Symfony structure with autowiring and autoconfiguration enabled. App namespace is `App\` mapped to `src/`.
+Services are auto-registered from `src/` in `config/services.yaml`.
