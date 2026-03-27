@@ -1,6 +1,7 @@
 {
     "name": "itk-dev/aarhusai-overview",
     "description": "Overview of AarhusAI",
+    "license": "MIT",
     "type": "project",
     "require": {
         "php": "^8.4",
