@@ -1,17 +1,23 @@
-import { Controller } from '@hotwired/stimulus';
+import { Controller } from "@hotwired/stimulus";
 
-const ACTIVE = ['bg-white', 'shadow', 'text-indigo-600', 'border-b-2', 'border-indigo-500'];
-const INACTIVE = ['text-slate-500', 'border-b-2', 'border-transparent'];
+const ACTIVE = [
+    "bg-white",
+    "shadow",
+    "text-indigo-600",
+    "border-b-2",
+    "border-indigo-500",
+];
+const INACTIVE = ["text-slate-500", "border-b-2", "border-transparent"];
 
 export default class extends Controller {
-    static targets = ['btn', 'panel'];
+    static targets = ["btn", "panel"];
 
     select(event) {
         const index = this.btnTargets.indexOf(event.currentTarget);
 
         this.btnTargets.forEach((btn, i) => {
             const isActive = i === index;
-            btn.setAttribute('aria-selected', isActive);
+            btn.setAttribute("aria-selected", isActive);
 
             if (isActive) {
                 btn.classList.add(...ACTIVE);
@@ -23,7 +29,7 @@ export default class extends Controller {
         });
 
         this.panelTargets.forEach((panel, i) => {
-            panel.style.display = i === index ? '' : 'none';
+            panel.style.display = i === index ? "" : "none";
         });
     }
 }
