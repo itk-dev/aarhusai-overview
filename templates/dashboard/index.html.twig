@@ -37,7 +37,7 @@
             All Sites
         </a>
         {% for key in siteKeys %}
-            <a href="{{ path('dashboard', { site: key }) }}"
+            <a href="{{ path('dashboard', {site: key}) }}"
                 class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {{ activeSite == key ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' }}">
                 {{ key|capitalize }}
             </a>
@@ -74,16 +74,6 @@
                 </li>
             </ul>
         </div>
-
-        {# Build lookup maps for resolving principal IDs to names #}
-        {% set user_map = {} %}
-        {% for user in users %}
-            {% set user_map = user_map|merge({ (user.externalId): user.name }) %}
-        {% endfor %}
-        {% set group_map = {} %}
-        {% for group in groups %}
-            {% set group_map = group_map|merge({ (group.externalId): group.name }) %}
-        {% endfor %}
 
         {# Models panel #}
         <div data-tabs-target="panel">
@@ -133,26 +123,6 @@
                             {% if model.accessGrants|length > 0 %}
                                 <tr data-toggle-row-target="content" style="display: none">
                                     <td colspan="{{ activeSite is null ? 6 : 5 }}" class="px-6 py-4 bg-gray-50">
-                                        {# Group grants by principalType+principalId, groups first then users #}
-                                        {% set grouped_groups = {} %}
-                                        {% set grouped_users = {} %}
-                                        {% for grant in model.accessGrants %}
-                                            {% set key = grant.principalType ~ ':' ~ grant.principalId %}
-                                            {% if grant.principalType == 'group' %}
-                                                {% if grouped_groups[key] is defined %}
-                                                    {% set grouped_groups = grouped_groups|merge({ (key): grouped_groups[key]|merge({ permissions: grouped_groups[key].permissions|merge([grant.permission]) }) }) %}
-                                                {% else %}
-                                                    {% set grouped_groups = grouped_groups|merge({ (key): { principalType: grant.principalType, principalId: grant.principalId, permissions: [grant.permission] } }) %}
-                                                {% endif %}
-                                            {% else %}
-                                                {% if grouped_users[key] is defined %}
-                                                    {% set grouped_users = grouped_users|merge({ (key): grouped_users[key]|merge({ permissions: grouped_users[key].permissions|merge([grant.permission]) }) }) %}
-                                                {% else %}
-                                                    {% set grouped_users = grouped_users|merge({ (key): { principalType: grant.principalType, principalId: grant.principalId, permissions: [grant.permission] } }) %}
-                                                {% endif %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        {% set grouped = grouped_groups|merge(grouped_users) %}
                                         <table class="min-w-full text-sm table-fixed">
                                             <colgroup>
                                                 <col style="width: 15%">
@@ -167,7 +137,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200">
-                                                {% for entry in grouped %}
+                                                {% for entry in modelAccessGrants[model.externalId] %}
                                                     <tr>
                                                         <td class="py-1.5 pr-4">
                                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -176,16 +146,10 @@
                                                             </span>
                                                         </td>
                                                         <td class="py-1.5 pr-4 text-gray-900">
-                                                            {% if entry.principalType == 'group' %}
-                                                                {{ group_map[entry.principalId] ?? entry.principalId }}
-                                                            {% elseif entry.principalType == 'user' %}
-                                                                {{ user_map[entry.principalId] ?? entry.principalId }}
-                                                            {% else %}
-                                                                {{ entry.principalId }}
-                                                            {% endif %}
+                                                            {{ entry.principalName }}
                                                         </td>
                                                         <td class="py-1.5">
-                                                            {% for perm in entry.permissions|sort %}
+                                                            {% for perm in entry.permissions %}
                                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                                                                     {{ perm == 'write' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
                                                                     {{ perm }}

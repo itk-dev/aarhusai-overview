@@ -20,7 +20,7 @@ final class OpenWebUiClient
 
     public function fetchUsers(): array
     {
-        return $this->request('/api/v1/users/');
+        return $this->request('/api/v1/users/')['users'] ?? [];
     }
 
     public function fetchGroups(): array

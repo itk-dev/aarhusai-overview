@@ -24,8 +24,9 @@
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.50",
-        "friendsofphp/php-cs-fixer": "*",
-        "symfony/maker-bundle": "^1.66"
+        "friendsofphp/php-cs-fixer": "^3.94.2",
+        "symfony/maker-bundle": "^1.66",
+        "vincentlanglet/twig-cs-fixer": "^3.14"
     },
     "replace": {
         "symfony/polyfill-ctype": "*",

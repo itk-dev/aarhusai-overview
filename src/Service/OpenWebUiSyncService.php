@@ -91,7 +91,9 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
-        $this->removeStaleEntities(Model::class, $seenIds, $siteKey);
+        if ($count > 0) {
+            $this->removeStaleEntities(Model::class, $seenIds, $siteKey);
+        }
         $this->entityManager->flush();
 
         return $count;
@@ -105,7 +107,7 @@ final class OpenWebUiSyncService
         $seenIds = [];
         $count = 0;
 
-        foreach ($apiUsers['users'] as $item) {
+        foreach ($apiUsers as $item) {
             $id = $item['id'];
             $seenIds[] = $id;
             $user = $repository->find($id);
@@ -143,7 +145,9 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
-        $this->removeStaleEntities(User::class, $seenIds, $siteKey);
+        if ($count > 0) {
+            $this->removeStaleEntities(User::class, $seenIds, $siteKey);
+        }
         $this->entityManager->flush();
 
         return $count;
@@ -181,7 +185,9 @@ final class OpenWebUiSyncService
             ++$count;
         }
 
-        $this->removeStaleEntities(Group::class, $seenIds, $siteKey);
+        if ($count > 0) {
+            $this->removeStaleEntities(Group::class, $seenIds, $siteKey);
+        }
         $this->entityManager->flush();
 
         return $count;
@@ -192,6 +198,13 @@ final class OpenWebUiSyncService
      */
     private function syncAccessGrants(Model $model, string $siteKey, array $grants): void
     {
+        // Explicitly remove + flush old grants before inserting new ones.
+        // New grants may reuse the same primary key (externalId), so the old
+        // entities must be deleted from both the database and Doctrine's
+        // identity map first to avoid a duplicate-ID conflict.
+        foreach ($model->getAccessGrants() as $oldGrant) {
+            $this->entityManager->remove($oldGrant);
+        }
         $model->clearAccessGrants();
         $this->entityManager->flush();
 
