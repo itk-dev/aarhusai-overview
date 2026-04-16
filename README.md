@@ -1,9 +1,9 @@
 # AarhusAI Overview
 
 A dashboard application for monitoring and managing
-[OpenWebUI](https://github.com/open-webui/open-webui) instances. Syncs models,
-users, groups, and access grants from multiple OpenWebUI sites into a local
-database and presents them in a unified overview.
+[OpenWebUI](https://github.com/open-webui/open-webui) instances. Syncs models
+from multiple OpenWebUI sites into a local database and presents them in a
+unified overview.
 
 ## Requirements
 
@@ -62,14 +62,31 @@ database and presents them in a unified overview.
    docker compose exec phpfpm bin/console doctrine:migrations:migrate --no-interaction
    ```
 
-7. Access the site at `https://<COMPOSE_DOMAIN>`.
+7. Create a user account:
+
+   ```bash
+   docker compose exec phpfpm bin/console app:create-user admin@example.com
+   ```
+
+   A random password will be generated and printed in the terminal.
+
+8. Access the site at `https://<COMPOSE_DOMAIN>` and log in with the created
+   credentials.
 
 ## Usage
 
+### Authentication
+
+The dashboard requires login. Users are managed via the CLI:
+
+```bash
+# Create a new user (generates and displays a random password)
+docker compose exec phpfpm bin/console app:create-user user@example.com
+```
+
 ### Syncing data
 
-Pull models, users, groups, and access grants from all configured OpenWebUI
-sites:
+Pull models from all configured OpenWebUI sites:
 
 ```bash
 docker compose exec phpfpm bin/console app:sync-openwebui
@@ -83,11 +100,10 @@ docker compose exec phpfpm bin/console app:sync-openwebui --site=production
 
 ### Dashboard
 
-The web dashboard shows tabbed views for models, users, and groups with:
+The web dashboard shows a models overview with:
 
 - Site selector pills for filtering by OpenWebUI instance
 - Sortable table columns
-- Expandable detail rows
 - Health check indicators for configured instances
 
 ## Development

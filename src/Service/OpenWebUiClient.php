@@ -18,16 +18,6 @@ final class OpenWebUiClient
         return $this->request('/api/v1/models/list')['items'] ?? [];
     }
 
-    public function fetchUsers(): array
-    {
-        return $this->request('/api/v1/users/')['users'] ?? [];
-    }
-
-    public function fetchGroups(): array
-    {
-        return $this->request('/api/v1/groups/');
-    }
-
     public function isHealthy(): bool
     {
         try {

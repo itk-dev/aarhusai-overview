@@ -3,88 +3,36 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+#[ORM\Table(name: '`user`')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
-    #[ORM\Column(length: 255)]
-    private string $externalId;
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private string $site;
-
-    #[ORM\Column(length: 255)]
-    private string $name;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $username = null;
-
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 180, unique: true)]
     private string $email;
 
-    #[ORM\Column(length: 50)]
-    private string $role;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastActiveAt = null;
-
     #[ORM\Column]
-    private \DateTimeImmutable $updatedAt;
+    private string $password;
 
-    /**
-     * @var Collection<int, Group>
-     */
-    #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'users')]
-    #[ORM\JoinTable(
-        name: 'user_group',
-        joinColumns: [new ORM\JoinColumn(name: 'user_external_id', referencedColumnName: 'external_id')],
-        inverseJoinColumns: [new ORM\JoinColumn(name: 'group_external_id', referencedColumnName: 'external_id')],
-    )]
-    private Collection $groups;
-
-    public function __construct(string $externalId, string $site, string $name, string $email, string $role)
-    {
-        $this->externalId = $externalId;
-        $this->site = $site;
-        $this->name = $name;
+    public function __construct(
+        string $email,
+        string $password,
+    ) {
         $this->email = $email;
-        $this->role = $role;
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->groups = new ArrayCollection();
+        $this->password = $password;
     }
 
-    public function getExternalId(): string
+    public function getId(): ?int
     {
-        return $this->externalId;
-    }
-
-    public function getSite(): string
-    {
-        return $this->site;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(?string $username): void
-    {
-        $this->username = $username;
+        return $this->id;
     }
 
     public function getEmail(): string
@@ -92,63 +40,27 @@ class User
         return $this->email;
     }
 
-    public function setEmail(string $email): void
+    public function getUserIdentifier(): string
     {
-        $this->email = $email;
+        return $this->email;
     }
 
-    public function getRole(): string
+    public function getPassword(): string
     {
-        return $this->role;
+        return $this->password;
     }
 
-    public function setRole(string $role): void
+    public function setPassword(string $password): void
     {
-        $this->role = $role;
+        $this->password = $password;
     }
 
-    public function getLastActiveAt(): ?\DateTimeImmutable
+    public function getRoles(): array
     {
-        return $this->lastActiveAt;
+        return ['ROLE_USER'];
     }
 
-    public function setLastActiveAt(?\DateTimeImmutable $lastActiveAt): void
+    public function eraseCredentials(): void
     {
-        $this->lastActiveAt = $lastActiveAt;
-    }
-
-    public function getUpdatedAt(): \DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
-    }
-
-    /**
-     * @return Collection<int, Group>
-     */
-    public function getGroups(): Collection
-    {
-        return $this->groups;
-    }
-
-    public function addGroup(Group $group): void
-    {
-        if (!$this->groups->contains($group)) {
-            $this->groups->add($group);
-        }
-    }
-
-    public function removeGroup(Group $group): void
-    {
-        $this->groups->removeElement($group);
-    }
-
-    public function clearGroups(): void
-    {
-        $this->groups->clear();
     }
 }
