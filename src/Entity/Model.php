@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ModelRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ModelRepository::class)]
@@ -32,21 +30,11 @@ class Model
     #[ORM\Column]
     private bool $isActive = true;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'external_id', nullable: true, onDelete: 'SET NULL')]
-    private ?User $owner = null;
-
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
-
-    /**
-     * @var Collection<int, AccessGrant>
-     */
-    #[ORM\OneToMany(targetEntity: AccessGrant::class, mappedBy: 'model', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $accessGrants;
 
     public function __construct(
         string $externalId,
@@ -56,7 +44,6 @@ class Model
         ?string $description = null,
         ?string $systemPrompt = null,
         bool $isActive = true,
-        ?User $owner = null,
     ) {
         $this->externalId = $externalId;
         $this->site = $site;
@@ -65,9 +52,7 @@ class Model
         $this->description = $description;
         $this->systemPrompt = $systemPrompt;
         $this->isActive = $isActive;
-        $this->owner = $owner;
         $this->updatedAt = new \DateTimeImmutable();
-        $this->accessGrants = new ArrayCollection();
     }
 
     public function getExternalId(): string
@@ -130,16 +115,6 @@ class Model
         $this->isActive = $isActive;
     }
 
-    public function getOwner(): ?User
-    {
-        return $this->owner;
-    }
-
-    public function setOwner(?User $owner): void
-    {
-        $this->owner = $owner;
-    }
-
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -158,26 +133,5 @@ class Model
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
-    }
-
-    /**
-     * @return Collection<int, AccessGrant>
-     */
-    public function getAccessGrants(): Collection
-    {
-        return $this->accessGrants;
-    }
-
-    public function addAccessGrant(AccessGrant $accessGrant): void
-    {
-        if (!$this->accessGrants->contains($accessGrant)) {
-            $this->accessGrants->add($accessGrant);
-            $accessGrant->setModel($this);
-        }
-    }
-
-    public function clearAccessGrants(): void
-    {
-        $this->accessGrants->clear();
     }
 }

@@ -2,9 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Group;
 use App\Entity\Model;
-use App\Entity\User;
 use App\Service\OpenWebUiClientFactory;
 use App\Service\OpenWebUiSyncService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,57 +39,12 @@ final class DashboardController extends AbstractController
 
         $criteria = null !== $activeSite ? ['site' => $activeSite] : [];
         $models = $em->getRepository(Model::class)->findBy($criteria);
-        $users = $em->getRepository(User::class)->findBy($criteria);
-        $groups = $em->getRepository(Group::class)->findBy($criteria);
-
-        $userMap = [];
-        foreach ($users as $user) {
-            $userMap[$user->getExternalId()] = $user->getName();
-        }
-        $groupMap = [];
-        foreach ($groups as $group) {
-            $groupMap[$group->getExternalId()] = $group->getName();
-        }
-
-        $modelAccessGrants = [];
-        foreach ($models as $model) {
-            $grouped = [];
-            foreach ($model->getAccessGrants() as $grant) {
-                $key = $grant->getPrincipalType().':'.$grant->getPrincipalId();
-                if (!isset($grouped[$key])) {
-                    $grouped[$key] = [
-                        'principalType' => $grant->getPrincipalType(),
-                        'principalId' => $grant->getPrincipalId(),
-                        'principalName' => match ($grant->getPrincipalType()) {
-                            'group' => $groupMap[$grant->getPrincipalId()] ?? $grant->getPrincipalId(),
-                            'user' => $userMap[$grant->getPrincipalId()] ?? $grant->getPrincipalId(),
-                            default => $grant->getPrincipalId(),
-                        },
-                        'permissions' => [],
-                    ];
-                }
-                $grouped[$key]['permissions'][] = $grant->getPermission();
-            }
-
-            // Sort: groups first, then users
-            usort($grouped, fn ($a, $b) => ('group' === $a['principalType'] ? 0 : 1) <=> ('group' === $b['principalType'] ? 0 : 1));
-
-            // Sort permissions within each entry
-            foreach ($grouped as &$entry) {
-                sort($entry['permissions']);
-            }
-
-            $modelAccessGrants[$model->getExternalId()] = $grouped;
-        }
 
         return $this->render('dashboard/index.html.twig', [
             'models' => $models,
-            'users' => $users,
-            'groups' => $groups,
             'siteKeys' => $siteKeys,
             'siteHealth' => $siteHealth,
             'activeSite' => $activeSite,
-            'modelAccessGrants' => $modelAccessGrants,
         ]);
     }
 
@@ -111,7 +64,7 @@ final class DashboardController extends AbstractController
                 $this->addFlash('warning', sprintf('[%s] Skipped: %s', $site, $counts['error']));
                 continue;
             }
-            $this->addFlash('success', sprintf('[%s] Synced %d models, %d users, %d groups.', $site, $counts['models'], $counts['users'], $counts['groups']));
+            $this->addFlash('success', sprintf('[%s] Synced %d models.', $site, $counts['models']));
         }
 
         return $this->redirectToRoute('dashboard');

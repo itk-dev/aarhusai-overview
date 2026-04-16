@@ -48,7 +48,7 @@ final class SyncOpenWebUiCommand extends Command
                     $io->warning(sprintf('[%s] Skipped: %s', $site, $counts['error']));
                     continue;
                 }
-                $io->success(sprintf('[%s] Synced %d models, %d users, and %d groups.', $site, $counts['models'], $counts['users'], $counts['groups']));
+                $io->success(sprintf('[%s] Synced %d models.', $site, $counts['models']));
             }
 
             return Command::SUCCESS;

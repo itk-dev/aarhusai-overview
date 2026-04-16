@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260316134624 extends AbstractMigration
+final class Version20260416071816 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,14 +20,12 @@ final class Version20260316134624 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE model DROP FOREIGN KEY `FK_D79572D97E3C61F9`');
-        $this->addSql('ALTER TABLE model ADD CONSTRAINT FK_D79572D97E3C61F9 FOREIGN KEY (owner_id) REFERENCES user (external_id) ON DELETE SET NULL');
+        $this->addSql('CREATE TABLE model (external_id VARCHAR(255) NOT NULL, site VARCHAR(50) NOT NULL, name VARCHAR(255) NOT NULL, base_model_id VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, system_prompt LONGTEXT DEFAULT NULL, is_active TINYINT NOT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME NOT NULL, PRIMARY KEY (external_id)) DEFAULT CHARACTER SET utf8mb4');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE model DROP FOREIGN KEY FK_D79572D97E3C61F9');
-        $this->addSql('ALTER TABLE model ADD CONSTRAINT `FK_D79572D97E3C61F9` FOREIGN KEY (owner_id) REFERENCES user (external_id)');
+        $this->addSql('DROP TABLE model');
     }
 }
