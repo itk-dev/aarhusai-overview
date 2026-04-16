@@ -62,9 +62,27 @@ unified overview.
    docker compose exec phpfpm bin/console doctrine:migrations:migrate --no-interaction
    ```
 
-7. Access the site at `https://<COMPOSE_DOMAIN>`.
+7. Create a user account:
+
+   ```bash
+   docker compose exec phpfpm bin/console app:create-user admin@example.com
+   ```
+
+   A random password will be generated and printed in the terminal.
+
+8. Access the site at `https://<COMPOSE_DOMAIN>` and log in with the created
+   credentials.
 
 ## Usage
+
+### Authentication
+
+The dashboard requires login. Users are managed via the CLI:
+
+```bash
+# Create a new user (generates and displays a random password)
+docker compose exec phpfpm bin/console app:create-user user@example.com
+```
 
 ### Syncing data
 
