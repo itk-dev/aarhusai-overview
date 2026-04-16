@@ -16,7 +16,17 @@
             <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between">
                     <h1 class="text-xl font-semibold text-gray-900">AarhusAI Overview</h1>
-                    {% block header_right %}{% endblock %}
+                    <div class="flex items-center gap-4">
+                        {% if app.user %}
+                            <span class="text-sm text-gray-500">{{ app.user.userIdentifier }}</span>
+                            <form method="post" action="{{ path('app_logout') }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                                <button type="submit"
+                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">Logout</button>
+                            </form>
+                        {% endif %}
+                        {% block header_right %}{% endblock %}
+                    </div>
                 </div>
             </div>
         </header>

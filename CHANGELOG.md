@@ -18,3 +18,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sortable table columns and expandable detail rows via Stimulus controllers
 - Tailwind CSS styling via symfonycasts/tailwind-bundle
 - CI workflows for PHP, Twig, YAML, Markdown, and Composer checks
+- Form-based login with email and password
+- CLI command `app:create-user` for creating users with generated passwords
