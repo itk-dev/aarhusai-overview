@@ -64,7 +64,7 @@ unified overview.
 
 7. Build css:
 
-  ```bash
+   ```bash
    docker compose exec phpfpm bin/console tailwind:build
    ```
 
@@ -76,7 +76,7 @@ unified overview.
 
    A random password will be generated and printed in the terminal.
 
-8. Access the site at `https://<COMPOSE_DOMAIN>` and log in with the created
+9. Access the site at `https://<COMPOSE_DOMAIN>` and log in with the created
    credentials.
 
 ## Usage
