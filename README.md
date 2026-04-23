@@ -64,7 +64,7 @@ unified overview.
 
 7. Build css:
 
-    ```bash
+  ```bash
    docker compose exec phpfpm bin/console tailwind:build
    ```
 
