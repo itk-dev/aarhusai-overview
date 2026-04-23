@@ -62,7 +62,13 @@ unified overview.
    docker compose exec phpfpm bin/console doctrine:migrations:migrate --no-interaction
    ```
 
-7. Create a user account:
+7. Build css:
+
+    ```bash
+   docker compose exec phpfpm bin/console tailwind:build
+   ```
+
+8. Create a user account:
 
    ```bash
    docker compose exec phpfpm bin/console app:create-user admin@example.com
