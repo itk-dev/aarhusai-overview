@@ -16,7 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Site selector pills for filtering by site
 - Health check indicators for configured OpenWebUI instances
 - Sortable table columns and expandable detail rows via Stimulus controllers
-- Tailwind CSS styling via symfonycasts/tailwind-bundle
+- Modern dashboard frontend with hand-written CSS (Geist + Geist Mono),
+  sticky translucent masthead, segmented site tabs, animated health pings,
+  and a centered card login
+- Live sort-status indicator that reflects the active column and direction
 - CI workflows for PHP, Twig, YAML, Markdown, and Composer checks
 - Form-based login with email and password
 - CLI command `app:create-user` for creating users with generated passwords
