@@ -1,38 +1,46 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Login - AarhusAI Overview{% endblock %}
+{% block title %}Sign in — AarhusAI Overview{% endblock %}
 
 {% block body %}
-    <div class="flex min-h-[60vh] items-center justify-center">
-        <div class="w-full max-w-sm">
-            <h2 class="mb-6 text-center text-2xl font-bold text-gray-900">Sign in</h2>
+    <div class="gate reveal reveal-3">
+        <section class="gate__form">
+            <span class="gate__heading">Sign in</span>
+            <h1 class="gate__title">Welcome back</h1>
 
             {% if error %}
-                <div class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                <div class="flash flash--error" role="alert" style="margin-bottom: 1rem">
+                    <span class="flash__label">Error</span>
+                    <span class="flash__msg">{{ error.messageKey|trans(error.messageData, 'security') }}</span>
                 </div>
             {% endif %}
 
-            <form method="post" class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" name="_email" value="{{ last_email }}" required autofocus
-                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <form method="post" novalidate>
+                <div class="field">
+                    <label for="email" class="field__label">Email</label>
+                    <input type="email" id="email" name="_email" value="{{ last_email }}"
+                        required autofocus autocomplete="email"
+                        placeholder="name@aarhus.dk"
+                        class="field__input">
                 </div>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" name="_password" required
-                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <div class="field">
+                    <label for="password" class="field__label">Password</label>
+                    <input type="password" id="password" name="_password"
+                        required autocomplete="current-password"
+                        placeholder="••••••••"
+                        class="field__input">
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <button type="submit"
-                    class="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer">
-                    Sign in
-                </button>
+                <button type="submit" class="btn btn--accent btn--block">Sign in</button>
             </form>
-        </div>
+
+            <p class="gate__note">
+                Need access? Contact an administrator to have an account
+                created.
+            </p>
+        </section>
     </div>
 {% endblock %}

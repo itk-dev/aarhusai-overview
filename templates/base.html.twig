@@ -4,52 +4,63 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}AarhusAI Overview{% endblock %}</title>
-        {% block stylesheets %}
-        {% endblock %}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        {% block stylesheets %}{% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body class="bg-gray-50 min-h-screen">
-        <header class="bg-white shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-xl font-semibold text-gray-900">AarhusAI Overview</h1>
-                    <div class="flex items-center gap-4">
+    <body>
+        <header class="masthead reveal reveal-1">
+            <div class="shell">
+                <div class="masthead__main">
+                    <a href="{{ path('dashboard') }}" class="wordmark" aria-label="AarhusAI Overview">
+                        AarhusAI Overview
+                        <span class="wordmark__tag">Models &amp; endpoints</span>
+                    </a>
+
+                    <div class="session">
                         {% if app.user %}
-                            <span class="text-sm text-gray-500">{{ app.user.userIdentifier }}</span>
+                            <div class="session__user">{{ app.user.userIdentifier }}</div>
                             <form method="post" action="{{ path('app_logout') }}">
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                                <button type="submit"
-                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">Logout</button>
+                                <button type="submit" class="btn">Logout</button>
                             </form>
                         {% endif %}
-                        {% block header_right %}{% endblock %}
                     </div>
                 </div>
+
+                {% block subhead %}{% endblock %}
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-            {% for type, messages in app.flashes %}
-                {% for message in messages %}
-                    {% if type == 'success' %}
-                        {% set flash_classes = 'bg-green-50 text-green-800' %}
-                    {% elseif type == 'warning' %}
-                        {% set flash_classes = 'bg-amber-50 text-amber-800' %}
-                    {% else %}
-                        {% set flash_classes = 'bg-red-50 text-red-800' %}
-                    {% endif %}
-                    <div class="mb-4 px-4 py-3 rounded-md text-sm flex items-center justify-between {{ flash_classes }}" data-controller="dismiss">
-                        {{ message }}
-                        <button type="button" data-action="dismiss#dismiss" class="ml-4 shrink-0 cursor-pointer opacity-50 hover:opacity-100">
-                            {{ include('icons/close.html.twig') }}
-                        </button>
+        <main class="main reveal reveal-2">
+            <div class="shell">
+                {% set flashes = app.flashes %}
+                {% if flashes|length %}
+                    <div class="flash-stack">
+                        {% for type, messages in flashes %}
+                            {% for message in messages %}
+                                {% set flash_class = 'flash--error' %}
+                                {% set flash_label = 'Error' %}
+                                {% if type == 'success' %}{% set flash_class = 'flash--success' %}{% set flash_label = 'OK' %}{% endif %}
+                                {% if type == 'warning' %}{% set flash_class = 'flash--warning' %}{% set flash_label = 'Notice' %}{% endif %}
+                                <div class="flash {{ flash_class }}" data-controller="dismiss" role="status">
+                                    <span class="flash__label">{{ flash_label }}</span>
+                                    <span class="flash__msg">{{ message }}</span>
+                                    <button type="button" data-action="dismiss#dismiss" class="flash__close" aria-label="Dismiss">
+                                        {{ include('icons/close.html.twig') }}
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
                     </div>
-                {% endfor %}
-            {% endfor %}
-            {% block body %}{% endblock %}
+                {% endif %}
+
+                {% block body %}{% endblock %}
+            </div>
         </main>
     </body>
 </html>

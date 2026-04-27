@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-    static targets = ["header", "body"];
+    static targets = ["header", "body", "status"];
 
     connect() {
         // Sort ascending by the first header on load
@@ -11,6 +11,7 @@ export default class extends Controller {
                 this.headerTargets[0].querySelector("[data-sort-arrow]");
             if (arrow) arrow.textContent = "\u2191";
             this._sortByColumn(0, true);
+            this._updateStatus(this.headerTargets[0], true);
         }
     }
 
@@ -31,6 +32,18 @@ export default class extends Controller {
         if (arrow) arrow.textContent = ascending ? "\u2191" : "\u2193";
 
         this._sortByColumn(index, ascending);
+        this._updateStatus(th, ascending);
+    }
+
+    _updateStatus(th, ascending) {
+        if (!this.hasStatusTarget) return;
+        const direction = ascending ? "A→Z" : "Z→A";
+        const column = (th.dataset.sortLabel || th.textContent || "")
+            .replace(/[\u2191\u2193\u2195]/g, "")
+            .trim();
+        this.statusTarget.textContent = column
+            ? `Sorted by ${column} · ${direction}`
+            : `Sorted ${direction}`;
     }
 
     _sortByColumn(index, ascending) {

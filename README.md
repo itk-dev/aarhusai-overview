@@ -62,13 +62,7 @@ unified overview.
    docker compose exec phpfpm bin/console doctrine:migrations:migrate --no-interaction
    ```
 
-7. Build css:
-
-   ```bash
-   docker compose exec phpfpm bin/console tailwind:build
-   ```
-
-8. Create a user account:
+7. Create a user account:
 
    ```bash
    docker compose exec phpfpm bin/console app:create-user admin@example.com
@@ -76,7 +70,7 @@ unified overview.
 
    A random password will be generated and printed in the terminal.
 
-9. Access the site at `https://<COMPOSE_DOMAIN>` and log in with the created
+8. Access the site at `https://<COMPOSE_DOMAIN>` and log in with the created
    credentials.
 
 ## Usage
@@ -114,23 +108,11 @@ The web dashboard shows a models overview with:
 
 ## Development
 
-### Tailwind CSS
+### Styling
 
-Tailwind is managed via
-[symfonycasts/tailwind-bundle](https://github.com/symfonycasts/tailwind-bundle).
-Asset compilation happens automatically through Symfony AssetMapper.
-
-Build the Tailwind CSS output:
-
-```bash
-docker compose exec phpfpm php bin/console tailwind:build
-```
-
-Watch for changes during development:
-
-```bash
-docker compose exec phpfpm php bin/console tailwind:build --watch
-```
+Styles are hand-written CSS in `assets/styles/app.css` and served through
+Symfony AssetMapper. There is no build step — edit the file and refresh.
+Typography (Fraunces, IBM Plex Sans/Mono) is loaded from Google Fonts.
 
 ### Code standards
 

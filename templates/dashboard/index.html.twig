@@ -1,103 +1,120 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard - AarhusAI Overview{% endblock %}
+{% block title %}Dashboard — AarhusAI Overview{% endblock %}
 
-{% block header_right %}
-    <div class="flex items-center gap-4">
-        {% for key, healthy in siteHealth %}
-            <span class="inline-flex items-center gap-1.5 text-sm">
-                {% if healthy is null %}
-                    <span class="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
-                    <span class="text-gray-500">{{ key|capitalize }}</span>
-                {% elseif healthy %}
-                    <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                    <span class="text-green-700">{{ key|capitalize }}</span>
-                {% else %}
-                    <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                    <span class="text-red-700">{{ key|capitalize }}</span>
-                {% endif %}
+{% block subhead %}
+    <div class="subhead">
+        <div class="subhead__left">
+            <span class="health-cluster">
+                {% for key, healthy in siteHealth %}
+                    {% if healthy is null %}
+                        {% set health_class = 'health--unknown' %}
+                    {% elseif healthy %}
+                        {% set health_class = 'health--ok' %}
+                    {% else %}
+                        {% set health_class = 'health--bad' %}
+                    {% endif %}
+                    <span class="health {{ health_class }}">
+                        <span class="health__dot" aria-hidden="true"></span>
+                        {{ key|capitalize }}
+                    </span>
+                {% endfor %}
             </span>
-        {% endfor %}
-        <form method="post" action="{{ path('dashboard_sync') }}">
-            <input type="hidden" name="_token" value="{{ csrf_token('sync') }}">
-            <button type="submit"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors cursor-pointer">
-                {{ include('icons/sync.html.twig') }}
-                Sync
-            </button>
-        </form>
+        </div>
+        <div class="subhead__right">
+            <form method="post" action="{{ path('dashboard_sync') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('sync') }}">
+                <button type="submit" class="btn btn--accent">
+                    {{ include('icons/sync.html.twig') }}
+                    Sync now
+                </button>
+            </form>
+        </div>
     </div>
 {% endblock %}
 
 {% block body %}
-    {# Site selector pills #}
-    <div class="mb-4 flex gap-2">
-        <a href="{{ path('dashboard') }}"
-            class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {{ activeSite is null ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' }}">
-            All Sites
+    <header class="section-head reveal reveal-3">
+        <div>
+            <h1 class="section-head__title">Models</h1>
+        </div>
+        <div class="section-head__count">
+            <strong>{{ models|length }}</strong>
+            {{ models|length == 1 ? 'entry' : 'entries' }}
+        </div>
+    </header>
+
+    <nav class="tabs reveal reveal-3" aria-label="Site filter">
+        <a href="{{ path('dashboard') }}" class="tab"{% if activeSite is null %} aria-current="true"{% endif %}>
+            All sites
         </a>
         {% for key in siteKeys %}
-            <a href="{{ path('dashboard', {site: key}) }}"
-                class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {{ activeSite == key ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' }}">
+            <a href="{{ path('dashboard', {site: key}) }}" class="tab"{% if activeSite == key %} aria-current="true"{% endif %}>
                 {{ key|capitalize }}
             </a>
         {% endfor %}
-    </div>
+    </nav>
 
-    <div class="bg-white rounded-lg shadow">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200" data-controller="sortable">
-                <thead class="bg-gray-50">
+    <section class="index reveal reveal-4" data-controller="sortable">
+        <div class="index__bar">
+            <span>{% if activeSite %}{{ activeSite|capitalize }}{% else %}All sites{% endif %}</span>
+            <span data-sortable-target="status">Sorted by Name · A→Z</span>
+        </div>
+        <div class="index__scroll">
+            <table class="ledger">
+                <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none"
-                            data-sortable-target="header" data-action="click->sortable#sort">
-                            Name <span data-sort-arrow class="text-gray-400">&#x2195;</span>
+                        <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Name" scope="col">
+                            Name <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Model</th>
+                        <th scope="col">Base model</th>
                         {% if activeSite is null %}
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site</th>
+                            <th scope="col">Site</th>
                         {% endif %}
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
+                        <th scope="col">Updated</th>
                     </tr>
                 </thead>
                 {% for model in models %}
-                    <tbody class="bg-white divide-y divide-gray-200" data-controller="toggle-row" data-sortable-target="body">
+                    <tbody data-controller="toggle-row" data-sortable-target="body">
                         <tr>
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                            <td class="ledger__name">
                                 {% if model.description %}
-                                    <button type="button" data-action="toggle-row#toggle"
-                                        class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-900 cursor-pointer">
+                                    <button type="button"
+                                        data-action="toggle-row#toggle"
+                                        data-toggle-row-target="trigger"
+                                        aria-expanded="false"
+                                        class="ledger__name-toggle">
                                         {{ model.name }}
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                     </button>
                                 {% else %}
                                     {{ model.name }}
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.baseModelId ?? '-' }}</td>
+                            <td class="ledger__base">{{ model.baseModelId ?? '—' }}</td>
                             {% if activeSite is null %}
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ model.site }}</span>
-                                </td>
+                                <td><span class="ledger__site">{{ model.site }}</span></td>
                             {% endif %}
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.updatedAt|date('Y-m-d H:i') }}</td>
+                            <td class="ledger__date">{{ model.updatedAt|date('Y-m-d · H:i') }}</td>
                         </tr>
                         {% if model.description %}
-                            <tr data-toggle-row-target="content" style="display: none">
-                                <td colspan="{{ activeSite is null ? 4 : 3 }}" class="px-6 py-4 bg-gray-50 text-sm text-gray-700">
-                                    {{ model.description }}
+                            <tr data-toggle-row-target="content" class="ledger__detail" style="display: none">
+                                <td colspan="{{ activeSite is null ? 4 : 3 }}">
+                                    <span class="ledger__detail-eyebrow">Description</span>
+                                    <div class="ledger__detail-body">{{ model.description }}</div>
                                 </td>
                             </tr>
                         {% endif %}
                     </tbody>
                 {% else %}
-                    <tbody class="bg-white">
+                    <tbody>
                         <tr>
-                            <td colspan="{{ activeSite is null ? 4 : 3 }}" class="px-6 py-4 text-sm text-gray-500 text-center">No models synced yet. Run <code>bin/console app:sync-openwebui</code></td>
+                            <td colspan="{{ activeSite is null ? 4 : 3 }}" class="ledger__empty">
+                                Nothing on file yet — run <code>bin/console app:sync-openwebui</code> to populate the ledger.
+                            </td>
                         </tr>
                     </tbody>
                 {% endfor %}
             </table>
         </div>
-    </div>
+    </section>
 {% endblock %}
