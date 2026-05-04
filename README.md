@@ -35,8 +35,10 @@ unified overview.
    | `DATABASE_URL`                  | Doctrine database connection string           |
    | `OPENWEBUI_PRODUCTION_BASE_URL` | Base URL of the production OpenWebUI instance |
    | `OPENWEBUI_PRODUCTION_API_KEY`  | API key for production                        |
-   | `OPENWEBUI_TEST_BASE_URL`       | Base URL of the test OpenWebUI instance       |
-   | `OPENWEBUI_TEST_API_KEY`        | API key for test                              |
+   | `OPENWEBUI_DEV_BASE_URL`        | Base URL of the dev OpenWebUI instance        |
+   | `OPENWEBUI_DEV_API_KEY`         | API key for dev                               |
+   | `OPENWEBUI_STG_BASE_URL`        | Base URL of the staging OpenWebUI instance    |
+   | `OPENWEBUI_STG_API_KEY`         | API key for staging                           |
 
 3. Pull Docker images:
 

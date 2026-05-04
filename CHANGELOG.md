@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Symfony 7.4 project skeleton with Docker Compose setup
-- OpenWebUI API sync service supporting multiple sites (production/test)
+- OpenWebUI API sync service supporting multiple sites (production/staging/dev)
 - CLI command `app:sync-openwebui` for syncing models
 - Dashboard with models overview
 - Site selector pills for filtering by site
