@@ -11,9 +11,12 @@ parameters:
         production:
             base_url: '%env(OPENWEBUI_PRODUCTION_BASE_URL)%'
             api_key: '%env(OPENWEBUI_PRODUCTION_API_KEY)%'
-        test:
-            base_url: '%env(OPENWEBUI_TEST_BASE_URL)%'
-            api_key: '%env(OPENWEBUI_TEST_API_KEY)%'
+        staging:
+            base_url: '%env(OPENWEBUI_STG_BASE_URL)%'
+            api_key: '%env(OPENWEBUI_STG_API_KEY)%'
+        dev:
+            base_url: '%env(OPENWEBUI_DEV_BASE_URL)%'
+            api_key: '%env(OPENWEBUI_DEV_API_KEY)%'
 
 services:
     # default configuration for services in *this* file

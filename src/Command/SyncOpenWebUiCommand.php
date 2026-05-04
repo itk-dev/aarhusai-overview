@@ -26,7 +26,7 @@ final class SyncOpenWebUiCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('site', null, InputOption::VALUE_REQUIRED, 'Sync only the specified site (e.g. "production", "test")');
+        $this->addOption('site', null, InputOption::VALUE_REQUIRED, 'Sync only the specified site (e.g. "production", "dev", "staging")');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
