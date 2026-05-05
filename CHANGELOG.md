@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Removed basic auth since we have normal login
 - Symfony 7.4 project skeleton with Docker Compose setup
 - OpenWebUI API sync service supporting multiple sites (production/staging/dev)
 - CLI command `app:sync-openwebui` for syncing models
