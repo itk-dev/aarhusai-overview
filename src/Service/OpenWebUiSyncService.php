@@ -47,7 +47,7 @@ final class OpenWebUiSyncService
         foreach ($apiModels as $item) {
             $id = $item['id'];
             $seenIds[] = $id;
-            $model = $modelRepository->find($id);
+            $model = $modelRepository->findOneBy(['site' => $siteKey, 'externalId' => $id]);
 
             if (null === $model) {
                 $model = new Model(
