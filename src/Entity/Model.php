@@ -12,6 +12,7 @@ class Model
     #[ORM\Column(length: 255)]
     private string $externalId;
 
+    #[ORM\Id]
     #[ORM\Column(length: 50)]
     private string $site;
 

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added pagination to the models fetching logic
+- Made the pair `(external_id, site)` primary key for models
+  as the same external id can be used across multiple sites
 - Removed basic auth since we have normal login
 - Symfony 7.4 project skeleton with Docker Compose setup
 - OpenWebUI API sync service supporting multiple sites (production/staging/dev)
