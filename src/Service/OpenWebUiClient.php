@@ -15,7 +15,16 @@ final class OpenWebUiClient
 
     public function fetchModels(): array
     {
-        return $this->request('/api/v1/models/list')['items'] ?? [];
+        $all = [];
+        $page = 1;
+
+        do {
+            $response = $this->request('/api/v1/models/list', ['page' => $page]);
+            $all = array_merge($all, $response['items'] ?? []);
+            ++$page;
+        } while (count($all) < ($response['total'] ?? 0));
+
+        return $all;
     }
 
     public function isHealthy(): bool
@@ -29,14 +38,20 @@ final class OpenWebUiClient
         }
     }
 
-    private function request(string $endpoint): array
+    private function request(string $endpoint, array $query = []): array
     {
-        $response = $this->httpClient->request('GET', $this->baseUrl.$endpoint, [
+        $options = [
             'headers' => [
                 'Authorization' => 'Bearer '.$this->apiKey,
                 'Accept' => 'application/json',
             ],
-        ]);
+        ];
+
+        if ([] !== $query) {
+            $options['query'] = $query;
+        }
+        
+        $response = $this->httpClient->request('GET', $this->baseUrl.$endpoint, $options);
 
         return $response->toArray();
     }

@@ -24,14 +24,12 @@ final class OpenWebUiSyncService
         foreach ($siteKeys as $key) {
             try {
                 $client = $this->clientFactory->createClient($key);
-            } catch (\InvalidArgumentException $e) {
+                $results[$key] = [
+                    'models' => $this->syncModels($key, $client),
+                ];
+            } catch (\Throwable $e) {
                 $results[$key] = ['error' => $e->getMessage()];
-                continue;
             }
-
-            $results[$key] = [
-                'models' => $this->syncModels($key, $client),
-            ];
         }
 
         return $results;
