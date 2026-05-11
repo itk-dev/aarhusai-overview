@@ -50,7 +50,7 @@ final class OpenWebUiClient
         if ([] !== $query) {
             $options['query'] = $query;
         }
-        
+
         $response = $this->httpClient->request('GET', $this->baseUrl.$endpoint, $options);
 
         return $response->toArray();
