@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-10](https://github.com/itk-dev/aarhusai-overview/pull/10)
   - Ability to search by name.
 - [PR-9](https://github.com/itk-dev/aarhusai-overview/pull/9)
-    - Ability to sort by column.
+  - Ability to sort by column.
 - [PR-7](https://github.com/itk-dev/aarhusai-overview/pull/7)
   - Added pagination to the models fetching logic.
 - [PR-6](https://github.com/itk-dev/aarhusai-overview/pull/6)
