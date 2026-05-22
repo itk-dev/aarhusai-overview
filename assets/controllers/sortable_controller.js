@@ -67,18 +67,12 @@ export default class extends Controller {
             );
             linkUrl.searchParams.set("sort", sort);
             linkUrl.searchParams.set("dir", dir);
-            link.setAttribute(
-                "href",
-                `${linkUrl.pathname}${linkUrl.search}`,
-            );
+            link.setAttribute("href", `${linkUrl.pathname}${linkUrl.search}`);
         });
     }
 
     _slug(text) {
-        return (text || "")
-            .trim()
-            .toLowerCase()
-            .replace(/\s+/g, "-");
+        return (text || "").trim().toLowerCase().replace(/\s+/g, "-");
     }
 
     _updateStatus(th, ascending) {
