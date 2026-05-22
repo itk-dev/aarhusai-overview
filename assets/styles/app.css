@@ -356,6 +356,58 @@ body {
     height: 14px;
 }
 
+.filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-block: 1.5rem 1.25rem;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+}
+.search__field {
+    display: flex;
+}
+.search input[type="search"] {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.85rem;
+    min-width: 16rem;
+    box-shadow: var(--shadow-sm);
+    transition:
+        border-color 140ms var(--ease),
+        box-shadow 140ms var(--ease);
+}
+.search input[type="search"]::placeholder {
+    color: var(--muted-soft);
+}
+.search input[type="search"]:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px var(--surface-mute);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* ---------- Tabs / segmented control ---------- */
 .tabs {
     display: inline-flex;
@@ -366,7 +418,6 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    margin-block: 1.5rem 1.25rem;
     flex-wrap: wrap;
 }
 .tab {
