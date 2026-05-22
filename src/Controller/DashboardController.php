@@ -2,10 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Model;
+use App\Repository\ModelRepository;
 use App\Service\OpenWebUiClientFactory;
 use App\Service\OpenWebUiSyncService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +15,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 final class DashboardController extends AbstractController
 {
     #[Route('/', name: 'dashboard')]
-    public function index(Request $request, EntityManagerInterface $em, OpenWebUiClientFactory $clientFactory, CacheInterface $cache): Response
+    public function index(Request $request, ModelRepository $modelRepository, OpenWebUiClientFactory $clientFactory, CacheInterface $cache): Response
     {
         $siteKeys = $clientFactory->getSiteKeys();
         $activeSite = $request->query->get('site');
@@ -37,21 +36,31 @@ final class DashboardController extends AbstractController
             }
         }
 
-        $criteria = null !== $activeSite ? ['site' => $activeSite] : [];
-        $models = $em->getRepository(Model::class)->findBy($criteria);
+        $query = trim((string) $request->query->get('q', ''));
+        $models = $modelRepository->search($activeSite, '' !== $query ? $query : null);
 
-        $sortParams = array_filter([
+        $linkParams = array_filter([
             'sort' => $request->query->get('sort'),
             'dir' => $request->query->get('dir'),
         ], static fn ($value) => null !== $value && '' !== $value);
 
-        return $this->render('dashboard/index.html.twig', [
+        $isPartial = '1' === $request->headers->get('X-Partial');
+
+        $context = [
             'models' => $models,
             'siteKeys' => $siteKeys,
             'siteHealth' => $siteHealth,
             'activeSite' => $activeSite,
-            'sortParams' => $sortParams,
-        ]);
+            'linkParams' => $linkParams,
+            'searchQuery' => $query,
+            'isPartial' => $isPartial,
+        ];
+
+        if ($isPartial) {
+            return $this->render('dashboard/_ledger.html.twig', $context);
+        }
+
+        return $this->render('dashboard/index.html.twig', $context);
     }
 
     #[Route('/sync', name: 'dashboard_sync', methods: ['POST'])]
