@@ -40,11 +40,17 @@ final class DashboardController extends AbstractController
         $criteria = null !== $activeSite ? ['site' => $activeSite] : [];
         $models = $em->getRepository(Model::class)->findBy($criteria);
 
+        $sortParams = array_filter([
+            'sort' => $request->query->get('sort'),
+            'dir' => $request->query->get('dir'),
+        ], static fn ($value) => null !== $value && '' !== $value);
+
         return $this->render('dashboard/index.html.twig', [
             'models' => $models,
             'siteKeys' => $siteKeys,
             'siteHealth' => $siteHealth,
             'activeSite' => $activeSite,
+            'sortParams' => $sortParams,
         ]);
     }
 
