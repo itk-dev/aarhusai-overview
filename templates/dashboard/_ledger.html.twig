@@ -1,0 +1,72 @@
+<section class="index{% if not isPartial|default(false) %} reveal reveal-4{% endif %}" data-controller="sortable">
+    <div class="index__bar">
+        <span>{% if activeSite %}{{ activeSite|capitalize }}{% else %}All sites{% endif %}</span>
+        <span data-sortable-target="status">Sorted by Name · A→Z</span>
+    </div>
+    <div class="index__scroll">
+        <table class="ledger">
+            <thead>
+                <tr>
+                    <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Name" scope="col">
+                        Name <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
+                    </th>
+                    <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Base model" scope="col">
+                        Base model <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
+                    </th>
+                    {% if activeSite is null %}
+                        <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Site" scope="col">
+                            Site <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
+                        </th>
+                    {% endif %}
+                    <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Updated" scope="col">
+                        Updated <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
+                    </th>
+                </tr>
+            </thead>
+            {% for model in models %}
+                <tbody data-controller="toggle-row" data-sortable-target="body">
+                    <tr>
+                        <td class="ledger__name">
+                            {% if model.description %}
+                                <button type="button"
+                                    data-action="toggle-row#toggle"
+                                    data-toggle-row-target="trigger"
+                                    aria-expanded="false"
+                                    class="ledger__name-toggle">
+                                    {{ model.name }}
+                                </button>
+                            {% else %}
+                                {{ model.name }}
+                            {% endif %}
+                        </td>
+                        <td class="ledger__base">{{ model.baseModelId ?? '—' }}</td>
+                        {% if activeSite is null %}
+                            <td><span class="ledger__site">{{ model.site }}</span></td>
+                        {% endif %}
+                        <td class="ledger__date">{{ model.updatedAt|date('Y-m-d · H:i') }}</td>
+                    </tr>
+                    {% if model.description %}
+                        <tr data-toggle-row-target="content" class="ledger__detail" style="display: none">
+                            <td colspan="{{ activeSite is null ? 4 : 3 }}">
+                                <span class="ledger__detail-eyebrow">Description</span>
+                                <div class="ledger__detail-body">{{ model.description }}</div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            {% else %}
+                <tbody>
+                    <tr>
+                        <td colspan="{{ activeSite is null ? 4 : 3 }}" class="ledger__empty">
+                            {% if searchQuery %}
+                                No models match “{{ searchQuery }}”.
+                            {% else %}
+                                Nothing on file yet — run <code>bin/console app:sync-openwebui</code> to populate the ledger.
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+    </div>
+</section>
