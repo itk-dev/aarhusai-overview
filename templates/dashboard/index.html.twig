@@ -44,77 +44,35 @@
         </div>
     </header>
 
-    <nav class="tabs reveal reveal-3" aria-label="Site filter">
-        <a href="{{ path('dashboard') }}" class="tab"{% if activeSite is null %} aria-current="true"{% endif %}>
-            All sites
-        </a>
-        {% for key in siteKeys %}
-            <a href="{{ path('dashboard', {site: key}) }}" class="tab"{% if activeSite == key %} aria-current="true"{% endif %}>
-                {{ key|capitalize }}
+    <div class="filters reveal reveal-3">
+        <nav class="tabs" aria-label="Site filter">
+            <a href="{{ path('dashboard', linkParams) }}" class="tab" data-sort-link{% if activeSite is null %} aria-current="true"{% endif %}>
+                All sites
             </a>
-        {% endfor %}
-    </nav>
+            {% for key in siteKeys %}
+                <a href="{{ path('dashboard', linkParams|merge({site: key})) }}" class="tab" data-sort-link{% if activeSite == key %} aria-current="true"{% endif %}>
+                    {{ key|capitalize }}
+                </a>
+            {% endfor %}
+        </nav>
+        <form method="get" action="{{ path('dashboard') }}" class="search" role="search"
+            data-controller="search" data-action="submit->search#prevent">
+            {% if activeSite %}
+                <input type="hidden" name="site" value="{{ activeSite }}">
+            {% endif %}
+            {% if linkParams.sort is defined %}
+                <input type="hidden" name="sort" value="{{ linkParams.sort }}">
+            {% endif %}
+            {% if linkParams.dir is defined %}
+                <input type="hidden" name="dir" value="{{ linkParams.dir }}">
+            {% endif %}
+            <label class="search__field">
+                <span class="visually-hidden">Search by name</span>
+                <input type="search" name="q" value="{{ searchQuery }}" placeholder="Search by name" autocomplete="off"
+                    data-search-target="input" data-action="input->search#submit">
+            </label>
+        </form>
+    </div>
 
-    <section class="index reveal reveal-4" data-controller="sortable">
-        <div class="index__bar">
-            <span>{% if activeSite %}{{ activeSite|capitalize }}{% else %}All sites{% endif %}</span>
-            <span data-sortable-target="status">Sorted by Name · A→Z</span>
-        </div>
-        <div class="index__scroll">
-            <table class="ledger">
-                <thead>
-                    <tr>
-                        <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Name" scope="col">
-                            Name <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
-                        </th>
-                        <th scope="col">Base model</th>
-                        {% if activeSite is null %}
-                            <th scope="col">Site</th>
-                        {% endif %}
-                        <th scope="col">Updated</th>
-                    </tr>
-                </thead>
-                {% for model in models %}
-                    <tbody data-controller="toggle-row" data-sortable-target="body">
-                        <tr>
-                            <td class="ledger__name">
-                                {% if model.description %}
-                                    <button type="button"
-                                        data-action="toggle-row#toggle"
-                                        data-toggle-row-target="trigger"
-                                        aria-expanded="false"
-                                        class="ledger__name-toggle">
-                                        {{ model.name }}
-                                    </button>
-                                {% else %}
-                                    {{ model.name }}
-                                {% endif %}
-                            </td>
-                            <td class="ledger__base">{{ model.baseModelId ?? '—' }}</td>
-                            {% if activeSite is null %}
-                                <td><span class="ledger__site">{{ model.site }}</span></td>
-                            {% endif %}
-                            <td class="ledger__date">{{ model.updatedAt|date('Y-m-d · H:i') }}</td>
-                        </tr>
-                        {% if model.description %}
-                            <tr data-toggle-row-target="content" class="ledger__detail" style="display: none">
-                                <td colspan="{{ activeSite is null ? 4 : 3 }}">
-                                    <span class="ledger__detail-eyebrow">Description</span>
-                                    <div class="ledger__detail-body">{{ model.description }}</div>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                {% else %}
-                    <tbody>
-                        <tr>
-                            <td colspan="{{ activeSite is null ? 4 : 3 }}" class="ledger__empty">
-                                Nothing on file yet — run <code>bin/console app:sync-openwebui</code> to populate the ledger.
-                            </td>
-                        </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
-        </div>
-    </section>
+    {{ include('dashboard/_ledger.html.twig') }}
 {% endblock %}

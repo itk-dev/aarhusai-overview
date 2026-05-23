@@ -15,4 +15,26 @@ class ModelRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Model::class);
     }
+
+    /**
+     * @return list<Model>
+     */
+    public function search(?string $site, ?string $query): array
+    {
+        $qb = $this->createQueryBuilder('m');
+
+        if (null !== $site) {
+            $qb->andWhere('m.site = :site')->setParameter('site', $site);
+        }
+
+        if (null !== $query && '' !== $query) {
+            $qb->andWhere('LOWER(m.name) LIKE :query')
+                ->setParameter('query', '%'.strtolower($query).'%');
+        }
+
+        /** @var list<Model> $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
+    }
 }
