@@ -18,12 +18,16 @@
                             Site <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
                         </th>
                     {% endif %}
+                    <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Access" scope="col">
+                        Access <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
+                    </th>
                     <th data-sortable-target="header" data-action="click->sortable#sort" data-sort-label="Updated" scope="col">
                         Updated <span class="sort-arrow" data-sort-arrow>&#x2195;</span>
                     </th>
                 </tr>
             </thead>
             {% for model in models %}
+                {% set columnCount = (activeSite is null ? 5 : 4) %}
                 <tbody data-controller="toggle-row" data-sortable-target="body">
                     <tr>
                         <td class="ledger__name">
@@ -43,11 +47,20 @@
                         {% if activeSite is null %}
                             <td><span class="ledger__site">{{ model.site }}</span></td>
                         {% endif %}
+                        <td class="ledger__access">
+                            {% if model.accessCount is not null %}
+                                <span class="ledger__access-count">
+                                    {{ model.accessCount }} {{ model.accessCount == 1 ? 'user' : 'users' }}
+                                </span>
+                            {% else %}
+                                <span class="ledger__access-empty">—</span>
+                            {% endif %}
+                        </td>
                         <td class="ledger__date">{{ model.updatedAt|date('Y-m-d · H:i') }}</td>
                     </tr>
                     {% if model.description %}
                         <tr data-toggle-row-target="content" class="ledger__detail" style="display: none">
-                            <td colspan="{{ activeSite is null ? 4 : 3 }}">
+                            <td colspan="{{ columnCount }}">
                                 <span class="ledger__detail-eyebrow">Description</span>
                                 <div class="ledger__detail-body">{{ model.description }}</div>
                             </td>
@@ -57,7 +70,7 @@
             {% else %}
                 <tbody>
                     <tr>
-                        <td colspan="{{ activeSite is null ? 4 : 3 }}" class="ledger__empty">
+                        <td colspan="{{ activeSite is null ? 5 : 4 }}" class="ledger__empty">
                             {% if searchQuery %}
                                 No models match “{{ searchQuery }}”.
                             {% else %}

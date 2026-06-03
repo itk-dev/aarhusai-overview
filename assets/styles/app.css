@@ -820,6 +820,29 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+.ledger__access {
+    font-size: 0.82rem;
+    color: var(--ink-mid);
+}
+.ledger__access-count {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    padding: 0.2rem 0.55rem;
+    background: var(--surface-mute);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+}
+.ledger__access-empty {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted-soft);
+}
+
 .ledger__detail td {
     background: var(--surface-soft);
     border-top: 1px dashed var(--border);

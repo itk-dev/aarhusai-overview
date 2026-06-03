@@ -31,6 +31,14 @@ class Model
     #[ORM\Column]
     private bool $isActive = true;
 
+    /**
+     * Number of distinct users with access to this model, derived at sync time
+     * from the API's owner + access_grants. Null when group memberships couldn't
+     * be resolved (admin endpoints unavailable).
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $accessCount = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -45,6 +53,7 @@ class Model
         ?string $description = null,
         ?string $systemPrompt = null,
         bool $isActive = true,
+        ?int $accessCount = null,
     ) {
         $this->externalId = $externalId;
         $this->site = $site;
@@ -53,6 +62,7 @@ class Model
         $this->description = $description;
         $this->systemPrompt = $systemPrompt;
         $this->isActive = $isActive;
+        $this->accessCount = $accessCount;
         $this->updatedAt = new \DateTimeImmutable();
     }
 
@@ -114,6 +124,16 @@ class Model
     public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
+    }
+
+    public function getAccessCount(): ?int
+    {
+        return $this->accessCount;
+    }
+
+    public function setAccessCount(?int $accessCount): void
+    {
+        $this->accessCount = $accessCount;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
