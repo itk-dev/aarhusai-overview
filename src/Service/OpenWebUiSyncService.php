@@ -50,7 +50,7 @@ final class OpenWebUiSyncService
         foreach ($apiModels as $item) {
             $id = $item['id'];
             $seenIds[] = $id;
-            $accessCount = $this->countAccessUsers($item, $groupMembers);
+            [$userCount, $groupCount] = $this->countAccess($item, $groupMembers);
             $model = $modelRepository->findOneBy(['site' => $siteKey, 'externalId' => $id]);
 
             if (null === $model) {
@@ -62,7 +62,8 @@ final class OpenWebUiSyncService
                     description: $item['meta']['description'] ?? null,
                     systemPrompt: $item['params']['system'] ?? null,
                     isActive: $item['is_active'] ?? true,
-                    accessCount: $accessCount,
+                    accessUserCount: $userCount,
+                    accessGroupCount: $groupCount,
                 );
                 $this->entityManager->persist($model);
             } else {
@@ -71,7 +72,8 @@ final class OpenWebUiSyncService
                 $model->setDescription($item['meta']['description'] ?? null);
                 $model->setSystemPrompt($item['params']['system'] ?? null);
                 $model->setIsActive($item['is_active'] ?? true);
-                $model->setAccessCount($accessCount);
+                $model->setAccessUserCount($userCount);
+                $model->setAccessGroupCount($groupCount);
             }
 
             if (isset($item['created_at'])) {
@@ -119,15 +121,26 @@ final class OpenWebUiSyncService
     }
 
     /**
+     * Returns [userCount, groupCount] for a model:
+     *   - userCount: distinct users (owner + direct grants + members of any
+     *     resolved group grants).
+     *   - groupCount: number of distinct group grants that could not be
+     *     resolved (because the admin groups endpoint is unavailable). Zero
+     *     when all groups were expanded into userCount.
+     *
      * @param array<string, mixed>             $model
      * @param array<string, list<string>>|null $groupMembers
+     *
+     * @return array{0: int, 1: int}
      */
-    private function countAccessUsers(array $model, ?array $groupMembers): ?int
+    private function countAccess(array $model, ?array $groupMembers): array
     {
-        $unique = [];
+        $uniqueUsers = [];
+        $unresolvedGroups = [];
+
         $ownerId = $model['user_id'] ?? null;
         if (is_string($ownerId) && '' !== $ownerId) {
-            $unique[$ownerId] = true;
+            $uniqueUsers[$ownerId] = true;
         }
 
         foreach ($model['access_grants'] ?? [] as $grant) {
@@ -137,20 +150,21 @@ final class OpenWebUiSyncService
                 continue;
             }
             if ('user' === $type) {
-                $unique[$id] = true;
+                $uniqueUsers[$id] = true;
                 continue;
             }
             if ('group' === $type) {
                 if (null === $groupMembers) {
-                    return null;
+                    $unresolvedGroups[$id] = true;
+                    continue;
                 }
                 foreach ($groupMembers[$id] ?? [] as $memberId) {
-                    $unique[$memberId] = true;
+                    $uniqueUsers[$memberId] = true;
                 }
             }
         }
 
-        return count($unique);
+        return [count($uniqueUsers), count($unresolvedGroups)];
     }
 
     /**
