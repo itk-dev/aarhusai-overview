@@ -27,38 +27,6 @@ final class OpenWebUiClient
         return $all;
     }
 
-    /**
-     * Each group is returned with its member user IDs merged in from /export,
-     * because the list endpoint omits members.
-     *
-     * @return list<array{id: string, user_ids: list<string>}>
-     */
-    public function fetchGroups(): array
-    {
-        $groups = $this->request('/api/v1/groups/');
-
-        $result = [];
-        foreach ($groups as $group) {
-            $id = $group['id'] ?? null;
-            if (null === $id) {
-                continue;
-            }
-            $export = $this->request('/api/v1/groups/id/'.rawurlencode($id).'/export');
-            $userIds = [];
-            foreach ($export['user_ids'] ?? [] as $userId) {
-                if (is_string($userId)) {
-                    $userIds[] = $userId;
-                }
-            }
-            $result[] = [
-                'id' => $id,
-                'user_ids' => $userIds,
-            ];
-        }
-
-        return $result;
-    }
-
     public function isHealthy(): bool
     {
         try {

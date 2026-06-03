@@ -4,19 +4,13 @@ namespace App\Service;
 
 use App\Entity\Model;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 
 final class OpenWebUiSyncService
 {
-    private LoggerInterface $logger;
-
     public function __construct(
         private OpenWebUiClientFactory $clientFactory,
         private EntityManagerInterface $entityManager,
-        ?LoggerInterface $logger = null,
     ) {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -42,7 +36,6 @@ final class OpenWebUiSyncService
     private function syncModels(string $siteKey, OpenWebUiClient $client): int
     {
         $apiModels = $client->fetchModels();
-        $groupMembers = $this->fetchGroupMembers($siteKey, $client);
         $modelRepository = $this->entityManager->getRepository(Model::class);
         $seenIds = [];
         $count = 0;
@@ -50,7 +43,7 @@ final class OpenWebUiSyncService
         foreach ($apiModels as $item) {
             $id = $item['id'];
             $seenIds[] = $id;
-            [$userCount, $groupCount] = $this->countAccess($item, $groupMembers);
+            [$userCount, $groupCount] = $this->countAccess($item);
             $model = $modelRepository->findOneBy(['site' => $siteKey, 'externalId' => $id]);
 
             if (null === $model) {
@@ -95,52 +88,18 @@ final class OpenWebUiSyncService
     }
 
     /**
-     * Build a map of group_id => list<user_id>. Returns null when the admin-only
-     * groups endpoint is unreachable, signalling that group-based grants cannot
-     * be resolved.
+     * @param array<string, mixed> $model
      *
-     * @return array<string, list<string>>|null
+     * @return array{0: int, 1: int} [userCount, groupCount]
      */
-    private function fetchGroupMembers(string $siteKey, OpenWebUiClient $client): ?array
+    private function countAccess(array $model): array
     {
-        try {
-            $map = [];
-            foreach ($client->fetchGroups() as $group) {
-                $map[$group['id']] = $group['user_ids'];
-            }
-
-            return $map;
-        } catch (\Throwable $e) {
-            $this->logger->warning('OpenWebUI groups fetch failed for site {site}: {error}', [
-                'site' => $siteKey,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
-    }
-
-    /**
-     * Returns [userCount, groupCount] for a model:
-     *   - userCount: distinct users (owner + direct grants + members of any
-     *     resolved group grants).
-     *   - groupCount: number of distinct group grants that could not be
-     *     resolved (because the admin groups endpoint is unavailable). Zero
-     *     when all groups were expanded into userCount.
-     *
-     * @param array<string, mixed>             $model
-     * @param array<string, list<string>>|null $groupMembers
-     *
-     * @return array{0: int, 1: int}
-     */
-    private function countAccess(array $model, ?array $groupMembers): array
-    {
-        $uniqueUsers = [];
-        $unresolvedGroups = [];
+        $users = [];
+        $groups = [];
 
         $ownerId = $model['user_id'] ?? null;
         if (is_string($ownerId) && '' !== $ownerId) {
-            $uniqueUsers[$ownerId] = true;
+            $users[$ownerId] = true;
         }
 
         foreach ($model['access_grants'] ?? [] as $grant) {
@@ -150,21 +109,13 @@ final class OpenWebUiSyncService
                 continue;
             }
             if ('user' === $type) {
-                $uniqueUsers[$id] = true;
-                continue;
-            }
-            if ('group' === $type) {
-                if (null === $groupMembers) {
-                    $unresolvedGroups[$id] = true;
-                    continue;
-                }
-                foreach ($groupMembers[$id] ?? [] as $memberId) {
-                    $uniqueUsers[$memberId] = true;
-                }
+                $users[$id] = true;
+            } elseif ('group' === $type) {
+                $groups[$id] = true;
             }
         }
 
-        return [count($uniqueUsers), count($unresolvedGroups)];
+        return [count($users), count($groups)];
     }
 
     /**
