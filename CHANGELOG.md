@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [PR-12](https://github.com/itk-dev/aarhusai-overview/pull/12)
+  - Show the number of users with access to each model in the dashboard.
 - [PR-10](https://github.com/itk-dev/aarhusai-overview/pull/10)
   - Ability to search by name.
 - [PR-9](https://github.com/itk-dev/aarhusai-overview/pull/9)
