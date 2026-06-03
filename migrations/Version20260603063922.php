@@ -7,20 +7,25 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20260602120000 extends AbstractMigration
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260603063922 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add access_count column on model';
+        return '';
     }
 
     public function up(Schema $schema): void
     {
+        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE model ADD access_count INT DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
+        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE model DROP access_count');
     }
 }
