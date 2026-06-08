@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [PR-13](https://github.com/itk-dev/aarhusai-overview/pull/13)
+  - Security updates for `symfony/http-foundation`, `symfony/routing`,
+    `symfony/security-http`, and `twig/twig` (lock only).
+  - Sync upstream fix: `composer audit --locked` in the CI workflow.
 - [PR-12](https://github.com/itk-dev/aarhusai-overview/pull/12)
   - Show the number of users with access to each model in the dashboard.
 - [PR-10](https://github.com/itk-dev/aarhusai-overview/pull/10)
