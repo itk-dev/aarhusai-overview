@@ -31,6 +31,21 @@ class Model
     #[ORM\Column]
     private bool $isActive = true;
 
+    /**
+     * Distinct users with access (owner + direct user grants + members of any
+     * resolved group grants), counted at sync time from the API.
+     */
+    #[ORM\Column]
+    private int $accessUserCount = 0;
+
+    /**
+     * Number of group grants whose membership could not be resolved (the admin
+     * groups endpoint is unavailable). Zero when all groups were expanded into
+     * accessUserCount.
+     */
+    #[ORM\Column]
+    private int $accessGroupCount = 0;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -45,6 +60,8 @@ class Model
         ?string $description = null,
         ?string $systemPrompt = null,
         bool $isActive = true,
+        int $accessUserCount = 0,
+        int $accessGroupCount = 0,
     ) {
         $this->externalId = $externalId;
         $this->site = $site;
@@ -53,6 +70,8 @@ class Model
         $this->description = $description;
         $this->systemPrompt = $systemPrompt;
         $this->isActive = $isActive;
+        $this->accessUserCount = $accessUserCount;
+        $this->accessGroupCount = $accessGroupCount;
         $this->updatedAt = new \DateTimeImmutable();
     }
 
@@ -114,6 +133,26 @@ class Model
     public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
+    }
+
+    public function getAccessUserCount(): int
+    {
+        return $this->accessUserCount;
+    }
+
+    public function setAccessUserCount(int $accessUserCount): void
+    {
+        $this->accessUserCount = $accessUserCount;
+    }
+
+    public function getAccessGroupCount(): int
+    {
+        return $this->accessGroupCount;
+    }
+
+    public function setAccessGroupCount(int $accessGroupCount): void
+    {
+        $this->accessGroupCount = $accessGroupCount;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
