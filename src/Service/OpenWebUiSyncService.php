@@ -98,7 +98,7 @@ final class OpenWebUiSyncService
         $groups = [];
 
         $ownerId = $model['user_id'] ?? null;
-        if (is_string($ownerId) && '' !== $ownerId) {
+        if (is_string($ownerId) && !empty($ownerId)) {
             $users[$ownerId] = true;
         }
 
